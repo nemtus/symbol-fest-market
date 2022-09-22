@@ -105,7 +105,7 @@ const UserUpdate = () => {
   return (
     <>
       <Container maxWidth="sm">
-        <h2>氏名・住所設定変更</h2>
+        <h2>プロフィール変更</h2>
         <Stack spacing={3}>
           <TextField
             required
