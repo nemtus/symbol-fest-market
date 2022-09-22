@@ -1,0 +1,21 @@
+name: CI functions
+on:
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['16']
+    name: Node ${{ matrix.node }} CI firebase functions
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci
+      - run: npm ci
+        working-directory: ./functions
+      - run: npm run build
+        working-directory: ./functions

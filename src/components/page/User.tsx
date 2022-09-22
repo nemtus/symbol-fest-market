@@ -57,7 +57,7 @@ const User = () => {
   return (
     <>
       <Container maxWidth="sm">
-        <h2>連絡先・配送先</h2>
+        <h2>プロフィール</h2>
         <Stack>
           <div>
             <h3>メールアドレス</h3>
