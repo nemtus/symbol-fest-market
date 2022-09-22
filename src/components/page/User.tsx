@@ -11,22 +11,22 @@ import db, { auth, doc } from '../../configs/firebase';
 import LoadingOverlay from '../ui/LoadingOverlay';
 import ErrorDialog from '../ui/ErrorDialog';
 
-interface UserInterface {
-  userId: string;
-  email: string;
-  name: string;
-  phoneNumber: string;
-  zipCode: string;
-  address1: string;
-  address2: string;
-  symbolAddress: string;
-}
+// interface UserInterface {
+//   userId: string;
+//   email: string;
+//   name: string;
+//   phoneNumber: string;
+//   zipCode: string;
+//   address1: string;
+//   address2: string;
+//   symbolAddress: string;
+// }
 
 const User = () => {
   const navigate = useNavigate();
   const { userId } = useParams();
   const [user, loading, error] = useAuthState(auth);
-  const [userDoc, userDocLoading, userDocError] = useDocument(doc(db, 'users', userId || ''), {
+  const [userDoc, userDocLoading] = useDocument(doc(db, 'users', userId || ''), {
     snapshotListenOptions: { includeMetadataChanges: true },
   });
 
