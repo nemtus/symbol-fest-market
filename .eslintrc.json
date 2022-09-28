@@ -25,7 +25,7 @@
     },
     "ecmaVersion": "latest",
     "tsconfigRootDir": ".",
-    "project": ["./tsconfig.json"],
+    "project": ["./tsconfig.json", "./functions/tsconfig.json"],
     "sourceType": "module"
   },
   "plugins": ["react", "react-hooks", "@typescript-eslint", "import", "unused-imports"],

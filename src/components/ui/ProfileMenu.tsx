@@ -1,11 +1,18 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useNavigate } from 'react-router-dom';
-import { IconButton, Menu, MenuItem } from '@mui/material';
+import { Divider, IconButton, Menu, MenuItem, MenuList, ListItemIcon, ListItemText } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import FiberNewIcon from '@mui/icons-material/FiberNew';
+import LockResetIcon from '@mui/icons-material/LockReset';
+import LoginIcon from '@mui/icons-material/Login';
+import LogoutIcon from '@mui/icons-material/Logout';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import React, { useState } from 'react';
 import { auth, signOut } from '../../configs/firebase';
 
@@ -26,6 +33,22 @@ const ProfileMenu = () => {
     navigate(`/users/${user?.uid}`);
   };
 
+  const handleStore = () => {
+    handleClose();
+    if (!user?.uid) {
+      throw Error('Invalid userId');
+    }
+    navigate(`/users/${user?.uid}/stores/${user?.uid}`);
+  };
+
+  const handleItem = () => {
+    handleClose();
+    if (!user?.uid) {
+      throw Error('Invalid userId');
+    }
+    navigate(`/users/${user?.uid}/stores/${user?.uid}/items`);
+  };
+
   const handlePasswordUpdate = () => {
     handleClose();
     navigate('/password-update');
@@ -37,6 +60,16 @@ const ProfileMenu = () => {
       .then(() => {})
       .catch(() => {});
     navigate('/');
+  };
+
+  const handleSignUp = () => {
+    handleClose();
+    navigate('/sign-up');
+  };
+
+  const handleSignIn = () => {
+    handleClose();
+    navigate('/sign-in');
   };
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -64,12 +97,79 @@ const ProfileMenu = () => {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        <MenuItem onClick={handleUser}>プロフィール</MenuItem>
-        <MenuItem onClick={handlePasswordUpdate}>パスワード変更</MenuItem>
-        <MenuItem onClick={handleSignOut}>ログアウト</MenuItem>
+        <MenuList>
+          <MenuItem onClick={handleUser}>
+            <ListItemIcon>
+              <AccountCircleIcon />
+            </ListItemIcon>
+            <ListItemText>プロフィール</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={handleStore}>
+            <ListItemIcon>
+              <StorefrontIcon />
+            </ListItemIcon>
+            <ListItemText>店舗情報</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={handleItem}>
+            <ListItemIcon>
+              <CardGiftcardIcon />
+            </ListItemIcon>
+            <ListItemText>商品情報</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={handlePasswordUpdate}>
+            <ListItemIcon>
+              <LockResetIcon />
+            </ListItemIcon>
+            <ListItemText>パスワード変更</ListItemText>
+          </MenuItem>
+          <Divider />
+          <MenuItem onClick={handleSignOut}>
+            <ListItemIcon>
+              <LogoutIcon />
+            </ListItemIcon>
+            <ListItemText>ログアウト</ListItemText>
+          </MenuItem>
+        </MenuList>
       </Menu>
     </>
-  ) : null;
+  ) : (
+    <>
+      <IconButton
+        size="large"
+        aria-label="auth menu icon"
+        aria-controls="menu-appbar"
+        aria-haspopup="true"
+        onClick={handleMenu}
+        color="inherit"
+      >
+        <AccountCircleIcon />
+      </IconButton>
+      <Menu
+        id="menu-appbar"
+        anchorEl={anchorEl}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        keepMounted
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        <MenuList>
+          <MenuItem onClick={handleSignUp}>
+            <ListItemIcon>
+              <FiberNewIcon />
+            </ListItemIcon>
+            <ListItemText>新規登録</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={handleSignIn}>
+            <ListItemIcon>
+              <LoginIcon />
+            </ListItemIcon>
+            <ListItemText>ログイン</ListItemText>
+          </MenuItem>
+        </MenuList>
+      </Menu>
+    </>
+  );
 };
 
 export default ProfileMenu;

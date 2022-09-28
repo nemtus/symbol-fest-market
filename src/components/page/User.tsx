@@ -7,6 +7,7 @@ import { useDocument } from 'react-firebase-hooks/firestore';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Container, Stack, IconButton } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { useEffect, useState } from 'react';
 import db, { auth, doc } from '../../configs/firebase';
 import LoadingOverlay from '../ui/LoadingOverlay';
 import ErrorDialog from '../ui/ErrorDialog';
@@ -26,9 +27,21 @@ const User = () => {
   const navigate = useNavigate();
   const { userId } = useParams();
   const [user, loading, error] = useAuthState(auth);
-  const [userDoc, userDocLoading] = useDocument(doc(db, 'users', userId || ''), {
+  const [userDoc, userDocLoading, userDocError] = useDocument(doc(db, 'users', userId || ''), {
     snapshotListenOptions: { includeMetadataChanges: true },
   });
+  const [storeDoc, storeDocLoading, storeDocError] = useDocument(
+    doc(db, 'users', userId ?? '', 'stores', userId ?? ''),
+    {
+      snapshotListenOptions: { includeMetadataChanges: true },
+    },
+  );
+  const [storeExists, setStoreExists] = useState(false);
+
+  useEffect(() => {
+    const isExists = !!storeDoc?.exists();
+    setStoreExists(isExists);
+  }, [storeDoc, setStoreExists]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText((userDoc?.data()?.symbolAddress as string) || '');
@@ -48,6 +61,22 @@ const User = () => {
         symbolAddress: userDoc?.data()?.symbolAddress ?? '',
       },
     });
+  };
+
+  const handleStoreCreate = () => {
+    if (!userId) {
+      throw Error('Invalid userId');
+    }
+    const storeId = userId;
+    navigate(`/users/${userId}/stores/${storeId}/create`);
+  };
+
+  const handleStore = () => {
+    if (!userId) {
+      throw Error('Invalid userId');
+    }
+    const storeId = userId;
+    navigate(`/users/${userId}/stores/${storeId}`);
   };
 
   if (!userId || !user?.uid || userId !== user?.uid) {
@@ -99,10 +128,24 @@ const User = () => {
           <Button color="primary" variant="contained" size="large" onClick={handleClick}>
             編集
           </Button>
+          <h2>店舗</h2>
+          <Stack>
+            {storeExists ? (
+              <Button color="primary" variant="contained" size="large" onClick={handleStore}>
+                店舗情報表示
+              </Button>
+            ) : (
+              <Button color="primary" variant="contained" size="large" onClick={handleStoreCreate}>
+                店舗情報登録
+              </Button>
+            )}
+          </Stack>
         </Stack>
       </Container>
-      <LoadingOverlay open={loading || userDocLoading} />
+      <LoadingOverlay open={loading || userDocLoading || storeDocLoading} />
       <ErrorDialog open={!!error} error={error} />
+      <ErrorDialog open={!!userDocError} error={userDocError} />
+      <ErrorDialog open={!!storeDocError} error={storeDocError} />
     </>
   );
 };
