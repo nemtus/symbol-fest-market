@@ -23,13 +23,13 @@ import db, { auth, collection, doc } from '../../configs/firebase';
 import LoadingOverlay from '../ui/LoadingOverlay';
 import ErrorDialog from '../ui/ErrorDialog';
 
-interface Item {
-  itemId: string;
-  itemName: string;
-  itemDescription: string;
-  itemImageFile: string;
-  itemStatus: 'ON_SALE' | 'SOLD_OUT';
-}
+// interface Item {
+//   itemId: string;
+//   itemName: string;
+//   itemDescription: string;
+//   itemImageFile: string;
+//   itemStatus: 'ON_SALE' | 'SOLD_OUT';
+// }
 
 interface Column {
   id: 'itemId' | 'itemName' | 'itemDescription' | 'itemImageFile' | 'itemStatus';
