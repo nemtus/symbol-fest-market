@@ -5,8 +5,42 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // 非公開情報
+
+    // ユーザー情報
     match /users/{userId} {
       allow read, create, update: if request.auth.uid == userId;
+    }
+    // 店舗情報
+    match /users/{userId}/stores/{storeId} {
+      allow read, create, update: if request.auth.uid == userId && request.auth.uid == storeId;
+    }
+    // 商品情報
+    match /users/{userId}/stores/{storeId}/items/{itemId} {
+      allow read, create, update: if request.auth.uid == userId && request.auth.uid == storeId;
+    }
+    // 注文情報(購入者視点)
+    match /users/{userId}/orders/{orderId} {
+      allow read, create: if request.auth.uid == userId;
+    }
+    // 注文情報(店舗視点)
+    match /users/{userId}/stores/{storeId}/orders/{orderId} {
+      allow read, update: if request.auth.uid == userId && request.auth.uid == storeId;
+    }
+
+    // 公開情報
+
+    // 店舗情報
+    match /stores/{storeId} {
+      allow read: if true;
+    }
+    // 商品情報
+    match /items/{itemId} {
+      allow read: if true;
+    }
+    // 商品情報(同一店舗内情報に限る)
+    match /stores/{storeId}/items/{itemId} {
+      allow read: if true;
     }
   }
 }

@@ -1,6 +1,7 @@
 import { getApps, getApp, initializeApp } from 'firebase/app';
 import { getAuth, signOut, EmailAuthProvider, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, collection, doc, setDoc, connectFirestoreEmulator } from 'firebase/firestore';
+import { getFirestore, collection, doc, addDoc, setDoc, connectFirestoreEmulator } from 'firebase/firestore';
+import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -17,11 +18,13 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
 const emailAuthProvider = new EmailAuthProvider();
+const functions = getFunctions(app);
 
 if (process.env.NODE_ENV === 'development') {
   connectAuthEmulator(auth, 'http://localhost:9099');
   connectFirestoreEmulator(db, 'localhost', 8080);
+  connectFunctionsEmulator(functions, 'localhost', 5001);
 }
 
-export { auth, signOut, emailAuthProvider, collection, doc, setDoc };
+export { auth, signOut, emailAuthProvider, collection, doc, setDoc, addDoc, functions };
 export default db;

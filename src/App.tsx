@@ -10,36 +10,39 @@ import PasswordUpdate from './components/page/PasswordUpdate';
 import User from './components/page/User';
 import UserCreate from './components/page/UserCreate';
 import UserUpdate from './components/page/UserUpdate';
+import Store from './components/page/Store';
+import StoreCreate from './components/page/StoreCreate';
+import StoreUpdate from './components/page/StoreUpdate';
+import ItemCreate from './components/page/ItemCreate';
+import Items from './components/page/Items';
 
 const App = () => (
   <BrowserRouter>
     <AppHeader />
     <Routes>
       <Route path="/" element={<Home />} />
+
       <Route path="/sign-up/" element={<SignUp />} />
       <Route path="/sign-in/" element={<SignIn />} />
       <Route path="/password-reset/" element={<PasswordReset />} />
       <Route path="/password-update/" element={<PasswordUpdate />} />
-      <Route path="/users/">
-        <Route path=":userId/create" element={<UserCreate />} />
-        <Route path=":userId/update" element={<UserUpdate />} />
-        <Route path=":userId" element={<User />}>
-          <Route path="shopping-cart" />
-          <Route path="orders" />
-        </Route>
-      </Route>
-      <Route path="/stores/">
-        <Route path="create" />
-        <Route path=":storeId/update" />
-        <Route path=":storeId">
-          <Route path="items">
-            <Route path="create" />
-            <Route path=":itemId">
-              <Route path="update" />
-            </Route>
-          </Route>
-        </Route>
-      </Route>
+
+      <Route path="/users/:userId/create" element={<UserCreate />} />
+      <Route path="/users/:userId/update" element={<UserUpdate />} />
+      <Route path="/users/:userId" element={<User />} />
+
+      <Route path="/users/:userId/stores/:storeId/create" element={<StoreCreate />} />
+      <Route path="/users/:userId/stores/:storeId/update" element={<StoreUpdate />} />
+      <Route path="/users/:userId/stores/:storeId" element={<Store />} />
+
+      <Route path="/users/:userId/stores/:storeId/items/create" element={<ItemCreate />} />
+      <Route path="/users/:userId/stores/:storeId/items/:itemId/update" element={<Store />} />
+      <Route path="/users/:userId/stores/:storeId/items/:itemId" element={<Store />} />
+      <Route path="/users/:userId/stores/:storeId/items" element={<Items />} />
+
+      <Route path="/users/:userId/orders/create" element={<Store />} />
+      <Route path="/users/:userId/orders/:orderId/update" element={<Store />} />
+      <Route path="/users/:userId/orders/:orderId" element={<Store />} />
     </Routes>
     <AppFooter />
   </BrowserRouter>
