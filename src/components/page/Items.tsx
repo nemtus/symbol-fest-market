@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData, useDocument } from 'react-firebase-hooks/firestore';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   Button,
   Container,
@@ -23,16 +23,8 @@ import db, { auth, collection, doc } from '../../configs/firebase';
 import LoadingOverlay from '../ui/LoadingOverlay';
 import ErrorDialog from '../ui/ErrorDialog';
 
-// interface Item {
-//   itemId: string;
-//   itemName: string;
-//   itemDescription: string;
-//   itemImageFile: string;
-//   itemStatus: 'ON_SALE' | 'SOLD_OUT';
-// }
-
 interface Column {
-  id: 'itemId' | 'itemName' | 'itemDescription' | 'itemImageFile' | 'itemStatus';
+  id: 'itemId' | 'itemName' | 'itemPrice' | 'itemPriceUnit' | 'itemDescription' | 'itemImageFile' | 'itemStatus';
   label: string;
   minWidth?: number;
   align?: 'right';
@@ -47,6 +39,14 @@ const columns: Column[] = [
   {
     id: 'itemName',
     label: '商品名',
+  },
+  {
+    id: 'itemPrice',
+    label: '商品価格',
+  },
+  {
+    id: 'itemPriceUnit',
+    label: '商品単位',
   },
   {
     id: 'itemStatus',
@@ -163,6 +163,13 @@ const Items = () => {
                     <TableRow hover role="checkbox" tabIndex={-1} key={document.itemId}>
                       {columns.map((column) => {
                         const value = document[column.id];
+                        if (column.id === 'itemId') {
+                          return (
+                            <TableCell key={column.id} align={column.align}>
+                              <Link to={`/users/${userId}/stores/${storeId}/items/${value as string}`}>{value}</Link>
+                            </TableCell>
+                          );
+                        }
                         return (
                           <TableCell key={column.id} align={column.align}>
                             {column.format && typeof value === 'number' ? column.format(value) : value}

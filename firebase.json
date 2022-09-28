@@ -8,6 +8,7 @@
     "predeploy": "npm --prefix ./functions ci && npm --prefix ./functions run build"
   },
   "hosting": {
+    "predeploy": "npm ci && npm run build",
     "public": "build",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [

@@ -14,7 +14,9 @@ import Store from './components/page/Store';
 import StoreCreate from './components/page/StoreCreate';
 import StoreUpdate from './components/page/StoreUpdate';
 import ItemCreate from './components/page/ItemCreate';
+import ItemUpdate from './components/page/ItemUpdate';
 import Items from './components/page/Items';
+import Item from './components/page/Item';
 
 const App = () => (
   <BrowserRouter>
@@ -36,8 +38,8 @@ const App = () => (
       <Route path="/users/:userId/stores/:storeId" element={<Store />} />
 
       <Route path="/users/:userId/stores/:storeId/items/create" element={<ItemCreate />} />
-      <Route path="/users/:userId/stores/:storeId/items/:itemId/update" element={<Store />} />
-      <Route path="/users/:userId/stores/:storeId/items/:itemId" element={<Store />} />
+      <Route path="/users/:userId/stores/:storeId/items/:itemId/update" element={<ItemUpdate />} />
+      <Route path="/users/:userId/stores/:storeId/items/:itemId" element={<Item />} />
       <Route path="/users/:userId/stores/:storeId/items" element={<Items />} />
 
       <Route path="/users/:userId/orders/create" element={<Store />} />

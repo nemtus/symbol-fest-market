@@ -11,13 +11,15 @@ import db, { auth, doc } from '../../configs/firebase';
 import LoadingOverlay from '../ui/LoadingOverlay';
 import ErrorDialog from '../ui/ErrorDialog';
 
-interface Item {
-  itemId: string;
-  itemName: string;
-  itemDescription: string;
-  itemImageFile: string;
-  itemStatus: 'ON_SALE' | 'SOLD_OUT';
-}
+// interface Item {
+//   itemId: string;
+//   itemName: string;
+//   itemPrice: number;
+//   itemPriceUnit: 'JPY';
+//   itemDescription: string;
+//   itemImageFile: string;
+//   itemStatus: 'ON_SALE' | 'SOLD_OUT';
+// }
 
 const Store = () => {
   const navigate = useNavigate();
@@ -45,7 +47,7 @@ const Store = () => {
     setItemExists(isItemExists);
   }, [userDoc, storeDoc, itemDoc, setItemExists]);
 
-  const handleItem = () => {
+  const handleItems = () => {
     if (!userId) {
       throw Error('Invalid userId');
     }
@@ -68,6 +70,8 @@ const Store = () => {
     navigate(`/users/${userId}/stores/${storeId}/items/${itemId}/update`, {
       state: {
         itemName: itemDoc?.data()?.itemName,
+        itemPrice: itemDoc?.data()?.itemPrice,
+        itemPriceUnit: itemDoc?.data()?.itemPriceUnit,
         itemDescription: itemDoc?.data()?.itemDescription,
         itemImageFile: itemDoc?.data()?.itemImageFile,
         itemStatus: itemDoc?.data()?.itemStatus,
@@ -98,6 +102,14 @@ const Store = () => {
               <div>{itemDoc?.data()?.itemName}</div>
             </div>
             <div>
+              <h3>商品価格</h3>
+              <div>{itemDoc?.data()?.itemPrice}</div>
+            </div>
+            <div>
+              <h3>商品価格通貨</h3>
+              <div>{itemDoc?.data()?.itemPriceUnit}</div>
+            </div>
+            <div>
               <h3>商品説明</h3>
               <div>{itemDoc?.data()?.itemDescription}</div>
             </div>
@@ -122,7 +134,7 @@ const Store = () => {
               <h3>商品登録無し</h3>
               <div>ご指定のIDの商品は見つかりませんでした。以下の商品一覧ページから商品をご確認ください。</div>
             </div>
-            <Button color="primary" variant="contained" size="large" onClick={handleItem}>
+            <Button color="primary" variant="contained" size="large" onClick={handleItems}>
               商品一覧ページ
             </Button>
           </Stack>

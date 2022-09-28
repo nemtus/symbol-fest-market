@@ -1,19 +1,18 @@
-name: CD Firebase
+name: CI React
 on:
-  push:
-    branches:
-      - main
+  pull_request:
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node: ['16']
-    name: Node ${{ matrix.node }} CD Firebase
+    name: Node ${{ matrix.node }} CI React
     steps:
       - uses: actions/checkout@v2
       - name: Setup node
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
-      - run: npx firebase deploy  --project=default --token=${{ secrets.FIREBASE_TOKEN }}
+      - run: npm ci
+      - run: npm run build

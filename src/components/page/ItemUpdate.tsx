@@ -6,53 +6,37 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useDocument } from 'react-firebase-hooks/firestore';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { Button, Container, Stack, TextField } from '@mui/material';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { Button, Container, MenuItem, Stack, TextField } from '@mui/material';
 import * as yup from 'yup';
 import db, { auth, doc, setDoc } from '../../configs/firebase';
 import LoadingOverlay from '../ui/LoadingOverlay';
 import ErrorDialog from '../ui/ErrorDialog';
 
-interface StoreUpdateFormInput {
-  storeName: string;
-  storeEmail: string;
-  storePhoneNumber: string;
-  storeZipCode: string;
-  storeAddress1: string;
-  storeAddress2: string;
-  storeSymbolAddress: string;
-  storeDescription: string;
-  storeImageFile: string;
-  storeCoverImageFile: string;
+interface ItemUpdateFormInput {
+  itemName: string;
+  itemPrice: number;
+  itemPriceUnit: 'JPY';
+  itemDescription: string;
+  itemImageFile: string;
+  itemStatus: 'ON_SALE' | 'SOLD_OUT';
 }
 
 const schema = yup.object({
-  storeName: yup.string().required('必須です'),
-  storeEmail: yup.string().required('必須です').email('メールアドレスの形式で入力してください'),
-  storePhoneNumber: yup
+  itemName: yup.string().required('必須です'),
+  itemPrice: yup.number().min(1, '0より大きな値を入力してください').required('必須です'),
+  itemPriceUnit: yup.string().required('必須です').matches(/^JPY$/, '有効な値を選択してください'),
+  itemDescription: yup.string().required('必須です'),
+  itemStatus: yup
     .string()
     .required('必須です')
-    .matches(
-      /^(((0(\d{1}[-(]?\d{4}|\d{2}[-(]?\d{3}|\d{3}[-(]?\d{2}|\d{4}[-(]?\d{1}|[5789]0[-(]?\d{4})[-)]?)|\d{1,4}-?)\d{4}|0120[-(]?\d{3}[-)]?\d{3})$/,
-      '有効な日本の電話番号を入力してください',
-    ),
-  storeZipCode: yup
-    .string()
-    .required('必須です')
-    .matches(/^\d{7}$/, '郵便番号は7桁の半角数字でハイフン無しで入力してください'),
-  storeAddress1: yup.string().required('必須です'),
-  storeAddress2: yup.string().required('必須です'),
-  storeSymbolAddress: yup
-    .string()
-    .required('必須です')
-    .matches(/^T[A-Z0-9]{38}$/, 'SymbolアドレスはTから始まる39文字の半角大文字英数字で入力してください'),
-  storeDescription: yup.string().required('必須です'),
+    .matches(/^(ON_SALE|SOLD_OUT)$/, '有効な値を選択してください'),
 });
 
-const StoreUpdate = () => {
+const ItemUpdate = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { userId, storeId } = useParams();
+  const { userId, storeId, itemId } = useParams();
   const [user, loading, error] = useAuthState(auth);
   const [userDoc, userDocLoading, userDocError] = useDocument(doc(db, 'users', userId ?? ''), {
     snapshotListenOptions: { includeMetadataChanges: true },
@@ -63,33 +47,36 @@ const StoreUpdate = () => {
       snapshotListenOptions: { includeMetadataChanges: true },
     },
   );
+  const [itemDoc, itemDocLoading, itemDocError] = useDocument(
+    doc(db, 'users', userId ?? '', 'stores', storeId ?? '', 'items', itemId ?? ''),
+    {
+      snapshotListenOptions: { includeMetadataChanges: true },
+    },
+  );
 
-  const currentStoreFormInput: StoreUpdateFormInput = {
-    storeName: location.state.storeName ?? '',
-    storeEmail: location.state.storeEmail ?? '',
-    storePhoneNumber: location.state.storePhoneNumber ?? '',
-    storeZipCode: location.state.storeZipCode ?? '',
-    storeAddress1: location.state.storeAddress1 ?? '',
-    storeAddress2: location.state.storeAddress2 ?? '',
-    storeSymbolAddress: location.state.storeSymbolAddress ?? '',
-    storeDescription: location.state.storeDescription ?? '',
-    storeImageFile: location.state.storeImageFile ?? '',
-    storeCoverImageFile: location.state.storeCoverImageFile ?? '',
+  const currentItemFormInput: ItemUpdateFormInput = {
+    itemName: location.state.itemName ?? '',
+    itemPrice: location.state.itemPrice ?? '',
+    itemPriceUnit: location.state.itemPriceUnit ?? '',
+    itemDescription: location.state.itemDescription ?? '',
+    itemImageFile: location.state.itemImageFile ?? '',
+    itemStatus: location.state.itemStatus ?? '',
   };
 
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
-  } = useForm<StoreUpdateFormInput>({
-    defaultValues: currentStoreFormInput,
+  } = useForm<ItemUpdateFormInput>({
+    defaultValues: currentItemFormInput,
     resolver: yupResolver(schema),
     mode: 'onChange',
     reValidateMode: 'onChange',
     criteriaMode: 'all',
   });
 
-  const onSubmit: SubmitHandler<StoreUpdateFormInput> = async (data) => {
+  const onSubmit: SubmitHandler<ItemUpdateFormInput> = async (data) => {
     if (!userId) {
       throw Error('Invalid userId');
     }
@@ -105,18 +92,26 @@ const StoreUpdate = () => {
     }
 
     if (!storeId) {
-      throw Error('Invalid userId');
+      throw Error('Invalid storeId');
     }
     if (storeId !== userId) {
       throw Error('storeId is not match with userId');
     }
     const storeDocRef = storeDoc?.ref;
     if (!storeDocRef) {
-      throw Error("Can't get user document reference");
+      throw Error("Can't get store document reference");
     }
 
-    await setDoc(storeDocRef, { storeId, ...data }, { merge: true });
-    navigate(`/users/${userId}/stores/${storeId}`);
+    if (!itemId) {
+      throw Error('Invalid itemId');
+    }
+    const itemDocRef = itemDoc?.ref;
+    if (!itemDocRef) {
+      throw Error("Can't get item document reference");
+    }
+
+    await setDoc(itemDocRef, { itemId, ...data }, { merge: true });
+    navigate(`/users/${userId}/stores/${storeId}/items/${itemId}`);
   };
 
   if (!userId || !user?.uid || userId !== user?.uid) {
@@ -130,83 +125,77 @@ const StoreUpdate = () => {
   return (
     <>
       <Container maxWidth="sm">
-        <h2>店舗編集</h2>
+        <h2>商品編集</h2>
         <Stack spacing={3}>
           <TextField
             required
-            label="店舗名"
+            label="商品名"
             type="text"
-            {...register('storeName')}
-            error={'storeName' in errors}
-            helperText={errors.storeName?.message}
+            {...register('itemName')}
+            error={'itemName' in errors}
+            helperText={errors.itemName?.message}
           />
           <TextField
             required
-            label="店舗メールアドレス"
-            type="email"
-            {...register('storeEmail')}
-            error={'storeEmail' in errors}
-            helperText={errors.storeEmail?.message}
+            label="商品価格"
+            type="number"
+            {...register('itemPrice')}
+            error={'itemPrice' in errors}
+            helperText={errors.itemPrice?.message}
+          />
+          <Controller
+            name="itemPriceUnit"
+            control={control}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                select
+                sx={{ mt: 2 }}
+                label="通貨"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+              >
+                <MenuItem value="JPY">円</MenuItem>
+              </TextField>
+            )}
           />
           <TextField
             required
-            label="店舗電話番号"
+            label="商品説明"
             type="text"
-            {...register('storePhoneNumber')}
-            error={'storePhoneNumber' in errors}
-            helperText={errors.storePhoneNumber?.message}
+            {...register('itemDescription')}
+            error={'itemDescription' in errors}
+            helperText={errors.itemDescription?.message}
           />
-          <TextField
-            required
-            label="店舗郵便番号"
-            type="text"
-            {...register('storeZipCode')}
-            error={'storeZipCode' in errors}
-            helperText={errors.storeZipCode?.message}
-          />
-          <TextField
-            required
-            label="店舗住所(都道府県市区町村)"
-            type="text"
-            {...register('storeAddress1')}
-            error={'storeAddress1' in errors}
-            helperText={errors.storeAddress1?.message}
-          />
-          <TextField
-            required
-            label="店舗住所(番地・建物名・部屋番号)"
-            type="text"
-            {...register('storeAddress2')}
-            error={'storeAddress2' in errors}
-            helperText={errors.storeAddress2?.message}
-          />
-          <TextField
-            required
-            label="店舗Symbolアドレス(テストネット)"
-            type="text"
-            {...register('storeSymbolAddress')}
-            error={'storeSymbolAddress' in errors}
-            helperText={errors.storeSymbolAddress?.message}
-          />
-          <TextField
-            required
-            label="店舗説明"
-            type="text"
-            {...register('storeDescription')}
-            error={'storeSymbolAddress' in errors}
-            helperText={errors.storeSymbolAddress?.message}
+          <Controller
+            name="itemStatus"
+            control={control}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                select
+                sx={{ mt: 2 }}
+                label="販売状態"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+              >
+                <MenuItem value="ON_SALE">販売中</MenuItem>
+                <MenuItem value="SOLD_OUT">販売停止中</MenuItem>
+              </TextField>
+            )}
           />
           <Button color="primary" variant="contained" size="large" onClick={handleSubmit(onSubmit)}>
             編集して保存
           </Button>
         </Stack>
       </Container>
-      <LoadingOverlay open={loading || userDocLoading || storeDocLoading} />
+      <LoadingOverlay open={loading || userDocLoading || storeDocLoading || itemDocLoading} />
       <ErrorDialog open={!!error} error={error} />
       <ErrorDialog open={!!userDocError} error={userDocError} />
       <ErrorDialog open={!!storeDocError} error={storeDocError} />
+      <ErrorDialog open={!!itemDocError} error={itemDocError} />
     </>
   );
 };
 
-export default StoreUpdate;
+export default ItemUpdate;
