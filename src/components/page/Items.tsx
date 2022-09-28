@@ -115,20 +115,20 @@ const Items = () => {
     navigate(`/users/${userId}/stores/${storeId}/items/create`);
   };
 
-  const handleItemUpdate = (itemData: Item) => {
-    if (!userId) {
-      throw Error('Invalid userId');
-    }
-    if (!storeId) {
-      throw Error('Invalid storeId');
-    }
-    if (!itemData.itemId) {
-      throw Error('Invalid itemId');
-    }
-    navigate(`/users/${userId}/stores/${storeId}/items/${itemData.itemId}/update`, {
-      state: itemData,
-    });
-  };
+  // const handleItemUpdate = (itemData: Item) => {
+  //   if (!userId) {
+  //     throw Error('Invalid userId');
+  //   }
+  //   if (!storeId) {
+  //     throw Error('Invalid storeId');
+  //   }
+  //   if (!itemData.itemId) {
+  //     throw Error('Invalid itemId');
+  //   }
+  //   navigate(`/users/${userId}/stores/${storeId}/items/${itemData.itemId}/update`, {
+  //     state: itemData,
+  //   });
+  // };
 
   if (!userId || !user?.uid || userId !== user?.uid) {
     return null;
