@@ -5,7 +5,7 @@
   },
   "functions": {
     "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log"],
-    "predeploy": "npm --prefix ./functions ci && npm --prefix ./functions run build"
+    "predeploy": ["npm --prefix ./functions ci", "npm --prefix ./functions run build"]
   },
   "hosting": {
     "predeploy": "npm ci && npm run build",

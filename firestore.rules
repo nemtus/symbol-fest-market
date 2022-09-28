@@ -42,5 +42,9 @@ service cloud.firestore {
     match /stores/{storeId}/items/{itemId} {
       allow read: if true;
     }
+    // 価格情報
+    match /exchanges/{exchangeId}/tickers/{tickerId}/currencies/{currencyId} {
+      allow read: if true;
+    }
   }
 }
