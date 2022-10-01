@@ -7,9 +7,9 @@ import { useDocument } from 'react-firebase-hooks/firestore';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Container, Stack } from '@mui/material';
 import { useState, useEffect } from 'react';
-import db, { auth, doc } from '../../configs/firebase';
-import LoadingOverlay from '../ui/LoadingOverlay';
-import ErrorDialog from '../ui/ErrorDialog';
+import db, { auth, doc } from '../../../../../../../../configs/firebase';
+import LoadingOverlay from '../../../../../../../ui/LoadingOverlay';
+import ErrorDialog from '../../../../../../../ui/ErrorDialog';
 
 // interface Item {
 //   itemId: string;
@@ -21,7 +21,7 @@ import ErrorDialog from '../ui/ErrorDialog';
 //   itemStatus: 'ON_SALE' | 'SOLD_OUT';
 // }
 
-const Store = () => {
+const Item = () => {
   const navigate = useNavigate();
   const { userId, storeId, itemId } = useParams();
   const [user, loading, error] = useAuthState(auth);
@@ -43,9 +43,20 @@ const Store = () => {
   const [itemExists, setItemExists] = useState(false);
 
   useEffect(() => {
+    if (!(!loading && user && userId && userId === user.uid)) {
+      navigate('/auth/sign-in/');
+      return;
+    }
+    if (!(!loading && user && user.emailVerified)) {
+      navigate(`/users/${userId ?? ''}/verify-user-email`);
+      return;
+    }
+    if (userId !== storeId) {
+      navigate(`/users/${userId}`);
+    }
     const isItemExists = !!userDoc?.exists() && !!storeDoc?.exists() && !!itemDoc?.exists();
     setItemExists(isItemExists);
-  }, [userDoc, storeDoc, itemDoc, setItemExists]);
+  }, [userId, storeId, user, loading, navigate, userDoc, storeDoc, itemDoc, setItemExists]);
 
   const handleItems = () => {
     if (!userId) {
@@ -78,14 +89,6 @@ const Store = () => {
       },
     });
   };
-
-  if (!userId || !user?.uid || userId !== user?.uid) {
-    return null;
-  }
-
-  if (userId !== storeId) {
-    return null;
-  }
 
   return (
     <>
@@ -149,4 +152,4 @@ const Store = () => {
   );
 };
 
-export default Store;
+export default Item;

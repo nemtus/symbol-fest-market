@@ -6,10 +6,10 @@ const Home = () => (
     <Stack spacing={3}>
       <h2>ホーム</h2>
       <div>
-        新規登録は<Link to="/sign-up/">こちら</Link>
+        新規登録は<Link to="/auth/sign-up/">こちら</Link>
       </div>
       <div>
-        ログインは<Link to="/sign-in/">こちら</Link>
+        ログインは<Link to="/auth/sign-in/">こちら</Link>
       </div>
     </Stack>
   </Container>

@@ -9,12 +9,12 @@ import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup';
-import { useCreateUserWithEmailAndPassword } from 'react-firebase-hooks/auth';
-import { auth } from '../../configs/firebase';
-import LoadingOverlay from '../ui/LoadingOverlay';
-import ErrorDialog from '../ui/ErrorDialog';
+import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
+import { auth } from '../../../configs/firebase';
+import LoadingOverlay from '../../ui/LoadingOverlay';
+import ErrorDialog from '../../ui/ErrorDialog';
 
-interface SignUpFormInput {
+interface SignInFormInput {
   email: string;
   password: string;
 }
@@ -31,23 +31,21 @@ const schema = yup.object({
     ),
 });
 
-const SignUp = () => {
+const SignIn = () => {
   const navigate = useNavigate();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SignUpFormInput>({
+  } = useForm<SignInFormInput>({
     resolver: yupResolver(schema),
     mode: 'onChange',
     reValidateMode: 'onChange',
     criteriaMode: 'all',
   });
 
-  const [createUserWithEmailAndPassword, userCredential, loading, error] = useCreateUserWithEmailAndPassword(auth, {
-    sendEmailVerification: true,
-  });
+  const [signInWithEmailAndPassword, userCredential, loading, error] = useSignInWithEmailAndPassword(auth);
 
   useEffect(() => {
     if (!userCredential) {
@@ -59,17 +57,21 @@ const SignUp = () => {
     if (!userCredential?.user?.uid) {
       return;
     }
-    navigate(`/users/${userCredential?.user?.uid}/create`);
-  });
+    if (!userCredential.user.emailVerified) {
+      navigate(`/users/${userCredential.user.uid}/verify-user-email`);
+      return;
+    }
+    navigate(`/users/${userCredential?.user?.uid}`);
+  }, [userCredential, navigate]);
 
-  const onSubmit: SubmitHandler<SignUpFormInput> = async (data) => {
-    await createUserWithEmailAndPassword(data.email, data.password);
+  const onSubmit: SubmitHandler<SignInFormInput> = async (data) => {
+    await signInWithEmailAndPassword(data.email, data.password);
   };
 
   return (
     <>
       <Container maxWidth="sm">
-        <h2>新規登録</h2>
+        <h2>ログイン</h2>
         <Stack spacing={3}>
           <TextField
             required
@@ -88,10 +90,13 @@ const SignUp = () => {
             helperText={errors.password?.message}
           />
           <Button color="primary" variant="contained" size="large" onClick={handleSubmit(onSubmit)}>
-            新規登録
+            ログイン
           </Button>
           <div>
-            ログインは<Link to="/sign-in/">こちら</Link>
+            新規登録は<Link to="/auth/sign-up/">こちら</Link>
+          </div>
+          <div>
+            パスワードをお忘れの方は<Link to="/auth/password-reset/">こちら</Link>
           </div>
           <div>
             <Link to="/">ホームに戻る</Link>
@@ -104,4 +109,4 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
+export default SignIn;

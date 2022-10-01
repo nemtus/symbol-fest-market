@@ -51,7 +51,7 @@ const ProfileMenu = () => {
 
   const handlePasswordUpdate = () => {
     handleClose();
-    navigate('/password-update');
+    navigate('/auth/password-update/');
   };
 
   const handleSignOut = () => {
@@ -64,12 +64,12 @@ const ProfileMenu = () => {
 
   const handleSignUp = () => {
     handleClose();
-    navigate('/sign-up');
+    navigate('/auth/sign-up/');
   };
 
   const handleSignIn = () => {
     handleClose();
-    navigate('/sign-in');
+    navigate('/auth/sign-in/');
   };
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {

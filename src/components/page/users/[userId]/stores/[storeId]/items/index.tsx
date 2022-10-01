@@ -19,9 +19,9 @@ import {
   TableRow,
 } from '@mui/material';
 import { useState, useEffect } from 'react';
-import db, { auth, collection, doc } from '../../configs/firebase';
-import LoadingOverlay from '../ui/LoadingOverlay';
-import ErrorDialog from '../ui/ErrorDialog';
+import db, { auth, collection, doc } from '../../../../../../../configs/firebase';
+import LoadingOverlay from '../../../../../../ui/LoadingOverlay';
+import ErrorDialog from '../../../../../../ui/ErrorDialog';
 
 interface Column {
   id: 'itemId' | 'itemName' | 'itemPrice' | 'itemPriceUnit' | 'itemDescription' | 'itemImageFile' | 'itemStatus';
@@ -91,9 +91,20 @@ const Items = () => {
   };
 
   useEffect(() => {
+    if (!(!loading && user && userId && userId === user.uid)) {
+      navigate('/auth/sign-in/');
+      return;
+    }
+    if (!(!loading && user && user.emailVerified)) {
+      navigate(`/users/${userId ?? ''}/verify-user-email`);
+      return;
+    }
+    if (userId !== storeId) {
+      navigate(`/users/${userId}`);
+    }
     const isExists = !!userDoc?.exists() && !!storeDoc?.exists();
     setStoreExists(isExists);
-  }, [userDoc, storeDoc, setStoreExists]);
+  }, [userId, storeId, user, loading, navigate, userDoc, storeDoc, setStoreExists]);
 
   const handleStoreCreate = () => {
     if (!userId) {
@@ -130,14 +141,6 @@ const Items = () => {
   //   });
   // };
 
-  if (!userId || !user?.uid || userId !== user?.uid) {
-    return null;
-  }
-
-  if (userId !== storeId) {
-    return null;
-  }
-
   return (
     <>
       {storeExists ? (
@@ -163,7 +166,7 @@ const Items = () => {
                     <TableRow hover role="checkbox" tabIndex={-1} key={document.itemId}>
                       {columns.map((column) => {
                         const value = document[column.id];
-                        if (column.id === 'itemId') {
+                        if (column.id === 'itemId' && userId && storeId) {
                           return (
                             <TableCell key={column.id} align={column.align}>
                               <Link to={`/users/${userId}/stores/${storeId}/items/${value as string}`}>{value}</Link>

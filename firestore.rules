@@ -5,46 +5,77 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // 非公開情報
+    // オリジナル情報
 
     // ユーザー情報
     match /users/{userId} {
-      allow read, create, update: if request.auth.uid == userId;
+      allow get: if request.auth.token.admin == true || request.auth.uid == userId;
+      allow list: if request.auth.token.admin == true;
+      allow create: if request.auth.token.admin == true || request.auth.uid == userId;
+      allow update: if request.auth.token.admin == true || request.auth.uid == userId;
     }
     // 店舗情報
     match /users/{userId}/stores/{storeId} {
-      allow read, create, update: if request.auth.uid == userId && request.auth.uid == storeId;
+      allow get: if request.auth.token.admin == true || (request.auth.uid == userId && request.auth.uid == storeId);
+      allow list: if request.auth.token.admin == true;
+      allow create: if request.auth.token.admin == true || (request.auth.uid == userId && request.auth.uid == storeId);
+      allow update: if request.auth.token.admin == true || (request.auth.uid == userId && request.auth.uid == storeId);
+    }
+    // 店舗KYCステータス ... 不要と判断
+    // match /users/{userId}/stores/{storeId}/kyc/status {
+    //   allow get: if (request.auth.token.admin == true || (request.auth.uid == userId && request.auth.uid == storeId));
+    //   allow list: if request.auth.token.admin == true;
+    //   allow create: if request.auth.token.admin == true;
+    //   allow update: if request.auth.token.admin == true;
+    // }
+    // 店舗KYC秘密情報
+    match /users/{userId}/stores/{storeId}/kyc/secret {
+      allow get: if request.auth.token.admin == true;
+      allow list: if request.auth.token.admin == true;
+      allow create: if request.auth.token.admin == true;
+      allow update: if request.auth.token.admin == true;
     }
     // 商品情報
     match /users/{userId}/stores/{storeId}/items/{itemId} {
-      allow read, create, update: if request.auth.uid == userId && request.auth.uid == storeId;
+      allow get: if request.auth.token.admin == true || (request.auth.uid == userId && request.auth.uid == storeId);
+      allow list: if request.auth.token.admin == true || (request.auth.uid == userId && request.auth.uid == storeId);
+      allow create: if request.auth.token.admin == true || (request.auth.uid == userId && request.auth.uid == storeId);
+      allow update: if request.auth.token.admin == true || (request.auth.uid == userId && request.auth.uid == storeId);
     }
     // 注文情報(購入者視点)
     match /users/{userId}/orders/{orderId} {
-      allow read, create: if request.auth.uid == userId;
-    }
-    // 注文情報(店舗視点)
-    match /users/{userId}/stores/{storeId}/orders/{orderId} {
-      allow read, update: if request.auth.uid == userId && request.auth.uid == storeId;
-    }
-
-    // 公開情報
-
-    // 店舗情報
-    match /stores/{storeId} {
-      allow read: if true;
-    }
-    // 商品情報
-    match /items/{itemId} {
-      allow read: if true;
-    }
-    // 商品情報(同一店舗内情報に限る)
-    match /stores/{storeId}/items/{itemId} {
-      allow read: if true;
+      allow get: if request.auth.token.admin == true || request.auth.uid == userId;
+      allow list: if request.auth.token.admin == true || request.auth.uid == userId;
+      allow create: if request.auth.token.admin == true || request.auth.uid == userId;
+      allow update: if request.auth.token.admin == true;
     }
     // 価格情報
     match /exchanges/{exchangeId}/tickers/{tickerId}/currencies/{currencyId} {
-      allow read: if true;
+      allow get: if true;
+      allow list: if true;
+    }
+
+    // 公開のためのコピー情報
+
+    // 店舗情報 ... 電話番号だけ非公開に加工した上でそれ以外は全て公開
+    match /stores/{storeId} {
+      allow get: if true;
+      allow list: if true;
+    }
+    // 商品情報(同一店舗内情報に限る)
+    match /stores/{storeId}/items/{itemId} {
+      allow get: if true;
+      allow list: if true;
+    }
+
+    // 店舗側でのオペレーションのためのコピー情報
+
+    // 注文情報(店舗視点)
+    match /users/{userId}/stores/{storeId}/orders/{orderId} {
+      allow get: if request.auth.token.admin == true || (request.auth.uid == userId && request.auth.uid == storeId);
+      allow list: if request.auth.token.admin == true || (request.auth.uid == userId && request.auth.uid == storeId);
+      allow create: if request.auth.token.admin == true;
+      allow update: if request.auth.token.admin == true || (request.auth.uid == userId && request.auth.uid == storeId);
     }
   }
 }

@@ -7,9 +7,9 @@ import { useDocument } from 'react-firebase-hooks/firestore';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Container, Stack } from '@mui/material';
 import { useState, useEffect } from 'react';
-import db, { auth, doc } from '../../configs/firebase';
-import LoadingOverlay from '../ui/LoadingOverlay';
-import ErrorDialog from '../ui/ErrorDialog';
+import db, { auth, doc } from '../../../../../../configs/firebase';
+import LoadingOverlay from '../../../../../ui/LoadingOverlay';
+import ErrorDialog from '../../../../../ui/ErrorDialog';
 
 // interface StoreCreateFormInput {
 //   storeName: string;
@@ -40,9 +40,20 @@ const Store = () => {
   const [storeExists, setStoreExists] = useState(false);
 
   useEffect(() => {
+    if (!(!loading && user && userId && userId === user.uid)) {
+      navigate('/auth/sign-in/');
+      return;
+    }
+    if (!(!loading && user && user.emailVerified)) {
+      navigate(`/users/${userId ?? ''}/verify-user-email`);
+      return;
+    }
+    if (userId !== storeId) {
+      navigate(`/users/${userId}`);
+    }
     const isExists = !!userDoc?.exists() && !!storeDoc?.exists();
     setStoreExists(isExists);
-  }, [userDoc, storeDoc, setStoreExists]);
+  }, [userId, storeId, user, loading, navigate, userDoc, storeDoc, setStoreExists]);
 
   const handleStoreCreate = () => {
     if (!userId) {
