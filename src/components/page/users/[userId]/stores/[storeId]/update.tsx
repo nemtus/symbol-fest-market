@@ -9,9 +9,10 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { Button, Container, Stack, TextField } from '@mui/material';
 import * as yup from 'yup';
-import db, { auth, doc, setDoc } from '../../configs/firebase';
-import LoadingOverlay from '../ui/LoadingOverlay';
-import ErrorDialog from '../ui/ErrorDialog';
+import { useEffect } from 'react';
+import db, { auth, doc, setDoc } from '../../../../../../configs/firebase';
+import LoadingOverlay from '../../../../../ui/LoadingOverlay';
+import ErrorDialog from '../../../../../ui/ErrorDialog';
 
 interface StoreUpdateFormInput {
   storeName: string;
@@ -119,13 +120,19 @@ const StoreUpdate = () => {
     navigate(`/users/${userId}/stores/${storeId}`);
   };
 
-  if (!userId || !user?.uid || userId !== user?.uid) {
-    return null;
-  }
-
-  if (userId !== storeId) {
-    return null;
-  }
+  useEffect(() => {
+    if (!(!loading && user && userId && userId === user.uid)) {
+      navigate('/auth/sign-in/');
+      return;
+    }
+    if (!(!loading && user && user.emailVerified)) {
+      navigate(`/users/${userId ?? ''}/verify-user-email`);
+      return;
+    }
+    if (userId !== storeId) {
+      navigate(`/users/${userId}`);
+    }
+  }, [userId, storeId, user, loading, navigate]);
 
   return (
     <>

@@ -5,15 +5,16 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useDocument } from 'react-firebase-hooks/firestore';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { Button, Container, Stack, TextField } from '@mui/material';
 import * as yup from 'yup';
-import db, { auth, doc, setDoc } from '../../configs/firebase';
-import LoadingOverlay from '../ui/LoadingOverlay';
-import ErrorDialog from '../ui/ErrorDialog';
+import { useEffect } from 'react';
+import db, { auth, doc, setDoc } from '../../../../configs/firebase';
+import LoadingOverlay from '../../../ui/LoadingOverlay';
+import ErrorDialog from '../../../ui/ErrorDialog';
 
-interface UserCreateFormInput {
+interface UserUpdateFormInput {
   name: string;
   phoneNumber: string;
   zipCode: string;
@@ -43,7 +44,8 @@ const schema = yup.object({
     .matches(/^T[A-Z0-9]{38}$/, 'SymbolアドレスはTから始まる39文字の半角大文字英数字で入力してください'),
 });
 
-const UserCreate = () => {
+const UserUpdate = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const { userId } = useParams();
   const [user, loading, error] = useAuthState(auth);
@@ -51,18 +53,28 @@ const UserCreate = () => {
     snapshotListenOptions: { includeMetadataChanges: true },
   });
 
+  const currentUserFormInput: UserUpdateFormInput = {
+    name: location.state.name ?? '',
+    phoneNumber: location.state.phoneNumber ?? '',
+    zipCode: location.state.zipCode ?? '',
+    address1: location.state.address1 ?? '',
+    address2: location.state.address2 ?? '',
+    symbolAddress: location.state.symbolAddress ?? '',
+  };
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<UserCreateFormInput>({
+  } = useForm<UserUpdateFormInput>({
+    defaultValues: currentUserFormInput,
     resolver: yupResolver(schema),
     mode: 'onChange',
     reValidateMode: 'onChange',
     criteriaMode: 'all',
   });
 
-  const onSubmit: SubmitHandler<UserCreateFormInput> = async (data) => {
+  const onSubmit: SubmitHandler<UserUpdateFormInput> = async (data) => {
     if (!userId) {
       throw Error('Invalid userId');
     }
@@ -80,14 +92,27 @@ const UserCreate = () => {
     navigate(`/users/${userId}`);
   };
 
-  if (!userId || !user?.uid || userId !== user?.uid) {
-    return null;
-  }
+  const handleCancel = () => {
+    if (!userId) {
+      throw Error('Invalid userId');
+    }
+    navigate(`/users/${userId}`);
+  };
+
+  useEffect(() => {
+    if (!(!loading && user && userId && userId === user.uid)) {
+      navigate('/auth/sign-in/');
+      return;
+    }
+    if (!(!loading && user && user.emailVerified)) {
+      navigate(`/users/${userId ?? ''}/verify-user-email`);
+    }
+  }, [userId, user, loading, navigate]);
 
   return (
     <>
       <Container maxWidth="sm">
-        <h2>プロフィール登録</h2>
+        <h2>プロフィール変更</h2>
         <Stack spacing={3}>
           <TextField
             required
@@ -138,7 +163,17 @@ const UserCreate = () => {
             helperText={errors.symbolAddress?.message}
           />
           <Button color="primary" variant="contained" size="large" onClick={handleSubmit(onSubmit)}>
-            登録して保存
+            変更して保存
+          </Button>
+          <Button
+            color="primary"
+            variant="contained"
+            size="large"
+            onClick={() => {
+              handleCancel();
+            }}
+          >
+            キャンセル
           </Button>
         </Stack>
       </Container>
@@ -149,4 +184,4 @@ const UserCreate = () => {
   );
 };
 
-export default UserCreate;
+export default UserUpdate;

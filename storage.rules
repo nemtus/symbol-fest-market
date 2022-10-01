@@ -4,5 +4,17 @@ service firebase.storage {
     match /{allPaths=**} {
       allow read, write: if false;
     }
+
+    match /users/{userId}/images/{allPaths=**} {
+      allow get: if true;
+      allow list: if request.auth.token.admin || (request.auth != null && request.auth.uid == userId);
+      allow create: if (request.auth.token.admin || (request.auth != null && request.auth.uid == userId)) && request.resource.contentType.matches('image/.*');
+    }
+
+    match /users/{userId}/stores/{storeId}/images/{allPaths=**} {
+      allow get: if true;
+      allow list: if request.auth.token.admin || (request.auth != null && request.auth.uid == userId && request.auth.uid == storeId);
+      allow create: if (request.auth.token.admin || (request.auth != null && request.auth.uid == userId && request.auth.uid == storeId)) && request.resource.contentType.matches('image/.*');
+    }
   }
 }

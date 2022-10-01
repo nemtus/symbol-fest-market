@@ -1,17 +1,25 @@
-import * as functions from 'firebase-functions';
 import { storeOnCreate as storeOnCreateFunction } from './stores/storeOnCreate';
 import { storeOnUpdate as storeOnUpdateFunction } from './stores/storeOnUpdate';
 import { itemOnCreate as itemOnCreateFunction } from './items/itemOnCreate';
 import { itemOnUpdate as itemOnUpdateFunction } from './items/itemOnUpdate';
+import { userOnCreate as userOnCreateFunction } from './users/userOnCreate';
+import { userOnUpdate as userOnUpdateFunction } from './users/userOnUpdate';
+import { httpsOnCallVerifyUserKyc as httpsOnCallVerifyUserKycFunction } from './https/onCall/httpsOnCallVerifyUserKyc';
+import { httpsOnCallVerifyStoreKyc as httpsOnCallVerifyStoreKycFunction } from './https/onCall/httpsOnCallVerifyStoreKyc';
+import { httpsOnCallChallengeToVerifyStoreEmail as httpsOnCallChallengeToVerifyStoreEmailFunction } from './https/onCall/httpsOnCallChallengeToVerifyStoreEmail';
+import { httpsOnCallChallengeToVerifyStorePhoneNumber as httpsOnCallChallengeToVerifyStorePhoneNumberFunction } from './https/onCall/httpsOnCallChallengeToVerifyStorePhoneNumber';
+import { httpsOnCallChallengeToVerifyStoreAddress as httpsOnCallChallengeToVerifyStoreAddressFunction } from './https/onCall/httpsOnCallChallengeToVerifyStoreAddress';
 import { priceZaifXymJpyPubSub as priceZaifXymJpyPubSubFunction } from './exchanges/zaif';
-
-export const helloWorld = functions.https.onRequest((request, response) => {
-  functions.logger.info('Hello logs!', { structuredData: true });
-  response.send('Hello from Firebase!');
-});
 
 export const storeOnCreate = storeOnCreateFunction;
 export const storeOnUpdate = storeOnUpdateFunction;
 export const itemOnCreate = itemOnCreateFunction;
 export const itemOnUpdate = itemOnUpdateFunction;
+export const userOnCreate = userOnCreateFunction;
+export const userOnUpdate = userOnUpdateFunction;
+export const httpsOnCallVerifyUserKyc = httpsOnCallVerifyUserKycFunction;
+export const httpsOnCallVerifyStoreKyc = httpsOnCallVerifyStoreKycFunction;
+export const httpsOnCallChallengeToVerifyStoreEmail = httpsOnCallChallengeToVerifyStoreEmailFunction;
+export const httpsOnCallChallengeToVerifyStorePhoneNumber = httpsOnCallChallengeToVerifyStorePhoneNumberFunction;
+export const httpsOnCallChallengeToVerifyStoreAddress = httpsOnCallChallengeToVerifyStoreAddressFunction;
 export const priceZaifXymJpyPubSub = priceZaifXymJpyPubSubFunction;

@@ -8,9 +8,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Container, Stack, IconButton } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { useEffect, useState } from 'react';
-import db, { auth, doc } from '../../configs/firebase';
-import LoadingOverlay from '../ui/LoadingOverlay';
-import ErrorDialog from '../ui/ErrorDialog';
+import db, { auth, doc } from '../../../../configs/firebase';
+import LoadingOverlay from '../../../ui/LoadingOverlay';
+import ErrorDialog from '../../../ui/ErrorDialog';
 
 // interface UserInterface {
 //   userId: string;
@@ -39,9 +39,16 @@ const User = () => {
   const [storeExists, setStoreExists] = useState(false);
 
   useEffect(() => {
+    if (!(!loading && user && userId && userId === user.uid)) {
+      navigate('/auth/sign-in/');
+      return;
+    }
+    if (!(!loading && user && user.emailVerified)) {
+      navigate(`/users/${userId ?? ''}/verify-user-email`);
+    }
     const isExists = !!storeDoc?.exists();
     setStoreExists(isExists);
-  }, [storeDoc, setStoreExists]);
+  }, [userId, user, loading, storeDoc, setStoreExists, navigate]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText((userDoc?.data()?.symbolAddress as string) || '');
@@ -79,9 +86,9 @@ const User = () => {
     navigate(`/users/${userId}/stores/${storeId}`);
   };
 
-  if (!userId || !user?.uid || userId !== user?.uid) {
-    return null;
-  }
+  // if (!userId || !user?.uid || userId !== user?.uid) {
+  //   return null;
+  // }
 
   return (
     <>

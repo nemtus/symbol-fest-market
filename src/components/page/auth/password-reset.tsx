@@ -10,9 +10,9 @@ import { Link } from 'react-router-dom';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { useSendPasswordResetEmail } from 'react-firebase-hooks/auth';
-import { auth } from '../../configs/firebase';
-import LoadingOverlay from '../ui/LoadingOverlay';
-import ErrorDialog from '../ui/ErrorDialog';
+import { auth } from '../../../configs/firebase';
+import LoadingOverlay from '../../ui/LoadingOverlay';
+import ErrorDialog from '../../ui/ErrorDialog';
 
 interface PasswordResetFormInput {
   email: string;
@@ -49,7 +49,7 @@ const PasswordReset = () => {
   return (
     <>
       <Container maxWidth="sm">
-        <h2>ログイン</h2>
+        <h2>パスワードリセット</h2>
         <Stack spacing={3}>
           <TextField
             required
@@ -76,10 +76,10 @@ const PasswordReset = () => {
             ''
           )}
           <div>
-            新規登録は<Link to="/sign-up/">こちら</Link>
+            新規登録は<Link to="/auth/sign-up/">こちら</Link>
           </div>
           <div>
-            ログインは<Link to="/sign-in/">こちら</Link>
+            ログインは<Link to="/auth/sign-in/">こちら</Link>
           </div>
           <div>
             <Link to="/">ホームに戻る</Link>
