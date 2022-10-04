@@ -12,6 +12,15 @@ interface VerifyStoreAddressResponse {
   storeAddressVerified: boolean;
 }
 
+interface KycStatus {
+  emailVerified: boolean;
+  userKycVerified: boolean;
+  storeEmailVerified: boolean;
+  storePhoneNumberVerified: boolean;
+  storeAddressVerified: boolean;
+  storeKycVerified: boolean;
+}
+
 export const httpsOnCallChallengeToVerifyStoreAddress = functions
   .region('asia-northeast1')
   .runWith({ memory: '128MB', timeoutSeconds: 10 })
@@ -43,12 +52,21 @@ export const httpsOnCallChallengeToVerifyStoreAddress = functions
         throw new functions.https.HttpsError('unauthenticated', 'Wrong secret');
       }
 
-      const { customClaims } = authUser;
+      const { emailVerified, customClaims } = authUser;
+      const userKycVerified = emailVerified;
       const storeAddressVerified = true;
       const storeEmailVerified = !!customClaims?.storeEmailVerified;
       const storePhoneNumberVerified = !!customClaims?.storePhoneNumberVerified;
-      const storeKycVerified = storeEmailVerified || storePhoneNumberVerified || storeAddressVerified;
-      await auth.setCustomUserClaims(userId, { storeAddressVerified, storeKycVerified });
+      const storeKycVerified = storeEmailVerified && storePhoneNumberVerified && storeAddressVerified;
+      const kycStatus: KycStatus = {
+        emailVerified,
+        userKycVerified,
+        storeEmailVerified,
+        storePhoneNumberVerified,
+        storeAddressVerified,
+        storeKycVerified,
+      };
+      await auth.setCustomUserClaims(userId, kycStatus);
       return { storeAddressVerified };
     } catch (error) {
       functions.logger.warn('httpsOnCallChallengeToVerifyStoreAddress', error);

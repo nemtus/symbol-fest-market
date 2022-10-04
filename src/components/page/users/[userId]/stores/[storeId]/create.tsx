@@ -21,6 +21,7 @@ interface StoreCreateFormInput {
   storeZipCode: string;
   storeAddress1: string;
   storeAddress2: string;
+  storeUrl: string;
   storeSymbolAddress: string;
   storeDescription: string;
   storeImageFile: string;
@@ -43,6 +44,7 @@ const schema = yup.object({
     .matches(/^\d{7}$/, '郵便番号は7桁の半角数字でハイフン無しで入力してください'),
   storeAddress1: yup.string().required('必須です'),
   storeAddress2: yup.string().required('必須です'),
+  storeUrl: yup.string().required('必須です').url('URLの形式で入力してください'),
   storeSymbolAddress: yup
     .string()
     .required('必須です')
@@ -106,18 +108,17 @@ const StoreCreate = () => {
   };
 
   useEffect(() => {
-    if (!(!loading && user && userId && userId === user.uid)) {
-      navigate('/auth/sign-in/');
+    if (loading || userDocLoading) {
       return;
     }
-    if (!(!loading && user && user.emailVerified)) {
-      navigate(`/users/${userId ?? ''}/verify-user-email`);
+    if (!(user && userId && userId === user.uid)) {
+      navigate('/auth/sign-in/');
       return;
     }
     if (userId !== storeId) {
       navigate(`/users/${userId}`);
     }
-  }, [userId, storeId, user, loading, navigate]);
+  }, [userId, storeId, user, loading, userDocLoading, navigate]);
 
   if (userId !== storeId) {
     return null;
@@ -175,6 +176,14 @@ const StoreCreate = () => {
             {...register('storeAddress2')}
             error={'storeAddress2' in errors}
             helperText={errors.storeAddress2?.message}
+          />
+          <TextField
+            required
+            label="店舗URL"
+            type="text"
+            {...register('storeUrl')}
+            error={'storeUrl' in errors}
+            helperText={errors.storeUrl?.message}
           />
           <TextField
             required

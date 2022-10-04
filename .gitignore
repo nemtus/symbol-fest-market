@@ -25,3 +25,5 @@ yarn-error.log*
 *.log
 
 .firebase/*
+extensions/firestore-send-email.env
+extensions/firestore-send-email.secret.local

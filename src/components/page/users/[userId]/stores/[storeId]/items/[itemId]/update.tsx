@@ -9,8 +9,8 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Button, Container, MenuItem, Stack, TextField } from '@mui/material';
 import * as yup from 'yup';
-import { useEffect } from 'react';
-import db, { auth, doc, setDoc } from '../../../../../../../../configs/firebase';
+import { useEffect, useState } from 'react';
+import db, { auth, doc, setDoc, httpsCallable, functions } from '../../../../../../../../configs/firebase';
 import LoadingOverlay from '../../../../../../../ui/LoadingOverlay';
 import ErrorDialog from '../../../../../../../ui/ErrorDialog';
 
@@ -34,6 +34,22 @@ const schema = yup.object({
     .matches(/^(ON_SALE|SOLD_OUT)$/, '有効な値を選択してください'),
 });
 
+interface VerifyKycRequest {
+  userId: string;
+  storeId: string;
+}
+
+interface VerifyKycResponse {
+  emailVerified: boolean;
+  userKycVerified: boolean;
+  storeEmailVerified: boolean;
+  storePhoneNumberVerified: boolean;
+  storeAddressVerified: boolean;
+  storeKycVerified: boolean;
+}
+
+const httpsOnCallVerifyKyc = httpsCallable<VerifyKycRequest, VerifyKycResponse>(functions, 'httpsOnCallVerifyKyc');
+
 const ItemUpdate = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -54,6 +70,16 @@ const ItemUpdate = () => {
       snapshotListenOptions: { includeMetadataChanges: true },
     },
   );
+  const [kycStatus, setKycStatus] = useState<VerifyKycResponse>({
+    emailVerified: false,
+    userKycVerified: false,
+    storeEmailVerified: false,
+    storePhoneNumberVerified: false,
+    storeAddressVerified: false,
+    storeKycVerified: false,
+  });
+  const [kycStatusLoading, setKycStatusLoading] = useState(false);
+  const [kycStatusError, setKycStatusError] = useState<Error | undefined>(undefined);
 
   const currentItemFormInput: ItemUpdateFormInput = {
     itemName: location.state.itemName ?? '',
@@ -116,18 +142,48 @@ const ItemUpdate = () => {
   };
 
   useEffect(() => {
-    if (!(!loading && user && userId && userId === user.uid)) {
-      navigate('/auth/sign-in/');
+    if (loading || userDocLoading || storeDocLoading || itemDocLoading) {
       return;
     }
-    if (!(!loading && user && user.emailVerified)) {
-      navigate(`/users/${userId ?? ''}/verify-user-email`);
+    if (!(user && userId && userId === user.uid)) {
+      navigate('/auth/sign-in/');
       return;
     }
     if (userId !== storeId) {
       navigate(`/users/${userId}`);
+      return;
     }
-  }, [userId, storeId, user, loading, navigate]);
+    setKycStatusLoading(true);
+    httpsOnCallVerifyKyc({ userId, storeId })
+      .then((res) => {
+        console.log(res);
+        setKycStatus(res.data);
+        if (!res.data.userKycVerified) {
+          navigate(`users/${userId}/verify-user-email`);
+        }
+        if (!res.data.storeKycVerified) {
+          navigate(`users/${userId}/stores/${storeId}`);
+        }
+      })
+      .catch((err) => {
+        setKycStatusError(err as Error);
+      })
+      .finally(() => {
+        setKycStatusLoading(false);
+      });
+  }, [
+    userId,
+    storeId,
+    user,
+    loading,
+    userDocLoading,
+    storeDocLoading,
+    itemDocLoading,
+    navigate,
+    setKycStatus,
+    setKycStatusError,
+    setKycStatusLoading,
+  ]);
 
   return (
     <>
@@ -191,16 +247,23 @@ const ItemUpdate = () => {
               </TextField>
             )}
           />
-          <Button color="primary" variant="contained" size="large" onClick={handleSubmit(onSubmit)}>
+          <Button
+            color="primary"
+            variant="contained"
+            size="large"
+            onClick={handleSubmit(onSubmit)}
+            disabled={!(kycStatus.userKycVerified && kycStatus.storeKycVerified)}
+          >
             編集して保存
           </Button>
         </Stack>
       </Container>
-      <LoadingOverlay open={loading || userDocLoading || storeDocLoading || itemDocLoading} />
+      <LoadingOverlay open={loading || userDocLoading || storeDocLoading || itemDocLoading || kycStatusLoading} />
       <ErrorDialog open={!!error} error={error} />
       <ErrorDialog open={!!userDocError} error={userDocError} />
       <ErrorDialog open={!!storeDocError} error={storeDocError} />
       <ErrorDialog open={!!itemDocError} error={itemDocError} />
+      <ErrorDialog open={!!kycStatusError} error={kycStatusError} />
     </>
   );
 };

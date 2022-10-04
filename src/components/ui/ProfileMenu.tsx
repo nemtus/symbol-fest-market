@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { useAuthState } from 'react-firebase-hooks/auth';
+// import { useAuthState } from 'react-firebase-hooks/auth';
 import { useNavigate } from 'react-router-dom';
 import { Divider, IconButton, Menu, MenuItem, MenuList, ListItemIcon, ListItemText } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -14,11 +14,14 @@ import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import React, { useState } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, signOut } from '../../configs/firebase';
+// import { AuthStatusContext } from '../../context/AuthContext';
 
 const ProfileMenu = () => {
   const navigate = useNavigate();
-  const [user] = useAuthState(auth);
+  // const authStatus = useContext(AuthStatusContext);
+  const [user, userLoading, userError] = useAuthState(auth);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClose = () => {

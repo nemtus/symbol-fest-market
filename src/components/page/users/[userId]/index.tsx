@@ -4,11 +4,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useDocument } from 'react-firebase-hooks/firestore';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Container, Stack, IconButton } from '@mui/material';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Box, Button, Container, Stack, IconButton } from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { useEffect, useState } from 'react';
-import db, { auth, doc } from '../../../../configs/firebase';
+import db, { auth, doc, httpsCallable, functions } from '../../../../configs/firebase';
 import LoadingOverlay from '../../../ui/LoadingOverlay';
 import ErrorDialog from '../../../ui/ErrorDialog';
 
@@ -22,6 +23,22 @@ import ErrorDialog from '../../../ui/ErrorDialog';
 //   address2: string;
 //   symbolAddress: string;
 // }
+
+interface VerifyKycRequest {
+  userId: string;
+  storeId: string;
+}
+
+interface VerifyKycResponse {
+  emailVerified: boolean;
+  userKycVerified: boolean;
+  storeEmailVerified: boolean;
+  storePhoneNumberVerified: boolean;
+  storeAddressVerified: boolean;
+  storeKycVerified: boolean;
+}
+
+const httpsOnCallVerifyKyc = httpsCallable<VerifyKycRequest, VerifyKycResponse>(functions, 'httpsOnCallVerifyKyc');
 
 const User = () => {
   const navigate = useNavigate();
@@ -37,18 +54,55 @@ const User = () => {
     },
   );
   const [storeExists, setStoreExists] = useState(false);
+  const [kycStatus, setKycStatus] = useState<VerifyKycResponse>({
+    emailVerified: false,
+    userKycVerified: false,
+    storeEmailVerified: false,
+    storePhoneNumberVerified: false,
+    storeAddressVerified: false,
+    storeKycVerified: false,
+  });
+  const [kycStatusLoading, setKycStatusLoading] = useState(false);
+  const [kycStatusError, setKycStatusError] = useState<Error | undefined>(undefined);
 
   useEffect(() => {
-    if (!(!loading && user && userId && userId === user.uid)) {
+    if (loading && userDocLoading && storeDocLoading) {
+      return;
+    }
+    if (!(user && userId && userId === user.uid)) {
       navigate('/auth/sign-in/');
       return;
     }
-    if (!(!loading && user && user.emailVerified)) {
-      navigate(`/users/${userId ?? ''}/verify-user-email`);
-    }
     const isExists = !!storeDoc?.exists();
     setStoreExists(isExists);
-  }, [userId, user, loading, storeDoc, setStoreExists, navigate]);
+    setKycStatusLoading(true);
+    httpsOnCallVerifyKyc({ userId, storeId: userId })
+      .then((res) => {
+        console.log(res);
+        setKycStatus(res.data);
+        if (!res.data.userKycVerified) {
+          navigate(`users/${userId}/verify-user-email`);
+        }
+      })
+      .catch((err) => {
+        setKycStatusError(err as Error);
+      })
+      .finally(() => {
+        setKycStatusLoading(false);
+      });
+  }, [
+    userId,
+    user,
+    loading,
+    userDocLoading,
+    storeDoc,
+    storeDocLoading,
+    setStoreExists,
+    setKycStatus,
+    setKycStatusLoading,
+    setKycStatusError,
+    navigate,
+  ]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText((userDoc?.data()?.symbolAddress as string) || '');
@@ -96,7 +150,21 @@ const User = () => {
         <h2>プロフィール</h2>
         <Stack>
           <div>
-            <h3>メールアドレス</h3>
+            <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
+              <h3>メールアドレス</h3>
+              {kycStatus.emailVerified ? (
+                <CheckIcon color="success" />
+              ) : (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  component={Link}
+                  to={`/users/${userId ?? ''}/verify-user-email`}
+                >
+                  確認
+                </Button>
+              )}
+            </Box>
             <div>{userDoc?.data()?.email}</div>
           </div>
           <div>
@@ -149,10 +217,11 @@ const User = () => {
           </Stack>
         </Stack>
       </Container>
-      <LoadingOverlay open={loading || userDocLoading || storeDocLoading} />
+      <LoadingOverlay open={loading || userDocLoading || storeDocLoading || kycStatusLoading} />
       <ErrorDialog open={!!error} error={error} />
       <ErrorDialog open={!!userDocError} error={userDocError} />
       <ErrorDialog open={!!storeDocError} error={storeDocError} />
+      <ErrorDialog open={!!kycStatusError} error={kycStatusError} />
     </>
   );
 };

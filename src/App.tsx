@@ -10,17 +10,21 @@ import PasswordUpdate from './components/page/auth/password-update';
 import User from './components/page/users/[userId]';
 import UserCreate from './components/page/users/[userId]/create';
 import UserUpdate from './components/page/users/[userId]/update';
+import VerifyUserEmail from './components/page/users/[userId]/verify-user-email';
 import Store from './components/page/users/[userId]/stores/[storeId]';
 import StoreCreate from './components/page/users/[userId]/stores/[storeId]/create';
 import StoreUpdate from './components/page/users/[userId]/stores/[storeId]/update';
+import VerifyStoreEmail from './components/page/users/[userId]/stores/[storeId]/verify-store-email';
+import VerifyStorePhoneNumber from './components/page/users/[userId]/stores/[storeId]/verify-store-phone-number';
+import VerifyStoreAddress from './components/page/users/[userId]/stores/[storeId]/verify-store-address';
 import ItemCreate from './components/page/users/[userId]/stores/[storeId]/items/[itemId]/create';
 import ItemUpdate from './components/page/users/[userId]/stores/[storeId]/items/[itemId]/update';
 import Items from './components/page/users/[userId]/stores/[storeId]/items';
 import Item from './components/page/users/[userId]/stores/[storeId]/items/[itemId]';
-import VerifyUserEmail from './components/page/users/[userId]/verify-user-email';
 
 const App = () => (
   <BrowserRouter>
+    {/* <AuthStatusProvider> */}
     <AppHeader />
     <Routes>
       <Route path="/" element={<Home />} />
@@ -37,6 +41,9 @@ const App = () => (
 
       <Route path="/users/:userId/stores/:storeId/create" element={<StoreCreate />} />
       <Route path="/users/:userId/stores/:storeId/update" element={<StoreUpdate />} />
+      <Route path="/users/:userId/stores/:storeId/verify-store-email" element={<VerifyStoreEmail />} />
+      <Route path="/users/:userId/stores/:storeId/verify-store-phone-number" element={<VerifyStorePhoneNumber />} />
+      <Route path="/users/:userId/stores/:storeId/verify-store-address" element={<VerifyStoreAddress />} />
       <Route path="/users/:userId/stores/:storeId" element={<Store />} />
 
       <Route path="/users/:userId/stores/:storeId/items/create" element={<ItemCreate />} />
@@ -49,6 +56,7 @@ const App = () => (
       <Route path="/users/:userId/orders/:orderId" element={<Store />} />
     </Routes>
     <AppFooter />
+    {/* </AuthStatusProvider> */}
   </BrowserRouter>
 );
 

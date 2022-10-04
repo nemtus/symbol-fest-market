@@ -21,6 +21,7 @@ interface StoreUpdateFormInput {
   storeZipCode: string;
   storeAddress1: string;
   storeAddress2: string;
+  storeUrl: string;
   storeSymbolAddress: string;
   storeDescription: string;
   storeImageFile: string;
@@ -43,6 +44,7 @@ const schema = yup.object({
     .matches(/^\d{7}$/, '郵便番号は7桁の半角数字でハイフン無しで入力してください'),
   storeAddress1: yup.string().required('必須です'),
   storeAddress2: yup.string().required('必須です'),
+  storeUrl: yup.string().required('必須です').url('URLの形式で入力してください'),
   storeSymbolAddress: yup
     .string()
     .required('必須です')
@@ -72,6 +74,7 @@ const StoreUpdate = () => {
     storeZipCode: location.state.storeZipCode ?? '',
     storeAddress1: location.state.storeAddress1 ?? '',
     storeAddress2: location.state.storeAddress2 ?? '',
+    storeUrl: location.state.storeUrl ?? '',
     storeSymbolAddress: location.state.storeSymbolAddress ?? '',
     storeDescription: location.state.storeDescription ?? '',
     storeImageFile: location.state.storeImageFile ?? '',
@@ -121,18 +124,19 @@ const StoreUpdate = () => {
   };
 
   useEffect(() => {
-    if (!(!loading && user && userId && userId === user.uid)) {
+    if (loading || userDocLoading || storeDocLoading) {
+      return;
+    }
+
+    if (!(user && userId && userId === user.uid)) {
       navigate('/auth/sign-in/');
       return;
     }
-    if (!(!loading && user && user.emailVerified)) {
-      navigate(`/users/${userId ?? ''}/verify-user-email`);
-      return;
-    }
+
     if (userId !== storeId) {
       navigate(`/users/${userId}`);
     }
-  }, [userId, storeId, user, loading, navigate]);
+  }, [userId, storeId, user, loading, userDocLoading, storeDocLoading, navigate]);
 
   return (
     <>
@@ -186,6 +190,14 @@ const StoreUpdate = () => {
             {...register('storeAddress2')}
             error={'storeAddress2' in errors}
             helperText={errors.storeAddress2?.message}
+          />
+          <TextField
+            required
+            label="店舗URL"
+            type="text"
+            {...register('storeUrl')}
+            error={'storeUrl' in errors}
+            helperText={errors.storeUrl?.message}
           />
           <TextField
             required

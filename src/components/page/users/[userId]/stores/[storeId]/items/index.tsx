@@ -19,7 +19,7 @@ import {
   TableRow,
 } from '@mui/material';
 import { useState, useEffect } from 'react';
-import db, { auth, collection, doc } from '../../../../../../../configs/firebase';
+import db, { auth, collection, doc, httpsCallable, functions } from '../../../../../../../configs/firebase';
 import LoadingOverlay from '../../../../../../ui/LoadingOverlay';
 import ErrorDialog from '../../../../../../ui/ErrorDialog';
 
@@ -42,11 +42,11 @@ const columns: Column[] = [
   },
   {
     id: 'itemPrice',
-    label: '商品価格',
+    label: '価格',
   },
   {
     id: 'itemPriceUnit',
-    label: '商品単位',
+    label: '単位',
   },
   {
     id: 'itemStatus',
@@ -57,6 +57,22 @@ const columns: Column[] = [
     label: '商品説明',
   },
 ];
+
+interface VerifyKycRequest {
+  userId: string;
+  storeId: string;
+}
+
+interface VerifyKycResponse {
+  emailVerified: boolean;
+  userKycVerified: boolean;
+  storeEmailVerified: boolean;
+  storePhoneNumberVerified: boolean;
+  storeAddressVerified: boolean;
+  storeKycVerified: boolean;
+}
+
+const httpsOnCallVerifyKyc = httpsCallable<VerifyKycRequest, VerifyKycResponse>(functions, 'httpsOnCallVerifyKyc');
 
 const Items = () => {
   const navigate = useNavigate();
@@ -80,6 +96,16 @@ const Items = () => {
   const [storeExists, setStoreExists] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(-1);
+  const [kycStatus, setKycStatus] = useState<VerifyKycResponse>({
+    emailVerified: false,
+    userKycVerified: false,
+    storeEmailVerified: false,
+    storePhoneNumberVerified: false,
+    storeAddressVerified: false,
+    storeKycVerified: false,
+  });
+  const [kycStatusLoading, setKycStatusLoading] = useState(false);
+  const [kycStatusError, setKycStatusError] = useState<Error | undefined>(undefined);
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -91,20 +117,53 @@ const Items = () => {
   };
 
   useEffect(() => {
-    if (!(!loading && user && userId && userId === user.uid)) {
-      navigate('/auth/sign-in/');
+    if (loading || userDocLoading || storeDocLoading || itemCollectionDataLoading || kycStatusLoading) {
       return;
     }
-    if (!(!loading && user && user.emailVerified)) {
-      navigate(`/users/${userId ?? ''}/verify-user-email`);
+    if (!(user && userId && userId === user.uid)) {
+      navigate('/auth/sign-in/');
       return;
     }
     if (userId !== storeId) {
       navigate(`/users/${userId}`);
+      return;
     }
     const isExists = !!userDoc?.exists() && !!storeDoc?.exists();
     setStoreExists(isExists);
-  }, [userId, storeId, user, loading, navigate, userDoc, storeDoc, setStoreExists]);
+    httpsOnCallVerifyKyc({ userId, storeId })
+      .then((res) => {
+        console.log(res);
+        setKycStatus(res.data);
+        if (!res.data.userKycVerified) {
+          navigate(`users/${userId}/verify-user-email`);
+        }
+        if (!res.data.storeKycVerified) {
+          navigate(`users/${userId}/stores/${storeId}`);
+        }
+      })
+      .catch((err) => {
+        setKycStatusError(err as Error);
+      })
+      .finally(() => {
+        setKycStatusLoading(false);
+      });
+  }, [
+    userId,
+    storeId,
+    user,
+    loading,
+    navigate,
+    userDoc,
+    storeDoc,
+    setStoreExists,
+    setKycStatusLoading,
+    setKycStatus,
+    setKycStatusError,
+    itemCollectionDataLoading,
+    kycStatusLoading,
+    storeDocLoading,
+    userDocLoading,
+  ]);
 
   const handleStoreCreate = () => {
     if (!userId) {
@@ -194,7 +253,13 @@ const Items = () => {
               onRowsPerPageChange={handleChangeRowsPerPage}
             />
           </Paper>
-          <Button color="primary" variant="contained" size="large" onClick={handleItemCreate}>
+          <Button
+            color="primary"
+            variant="contained"
+            size="large"
+            onClick={handleItemCreate}
+            disabled={!(kycStatus.storeKycVerified && kycStatus.userKycVerified)}
+          >
             + 商品追加
           </Button>
         </Container>
@@ -212,11 +277,14 @@ const Items = () => {
           </Stack>
         </Container>
       )}
-      <LoadingOverlay open={loading || userDocLoading || storeDocLoading || itemCollectionDataLoading} />
+      <LoadingOverlay
+        open={loading || userDocLoading || storeDocLoading || itemCollectionDataLoading || kycStatusLoading}
+      />
       <ErrorDialog open={!!error} error={error} />
       <ErrorDialog open={!!userDocError} error={userDocError} />
       <ErrorDialog open={!!storeDocError} error={storeDocError} />
       <ErrorDialog open={!!itemCollectionDataError} error={itemCollectionDataError} />
+      <ErrorDialog open={!!kycStatusError} error={kycStatusError} />
     </>
   );
 };

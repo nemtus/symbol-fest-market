@@ -4,10 +4,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useDocument } from 'react-firebase-hooks/firestore';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Container, Stack } from '@mui/material';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Box, Button, Container, Stack } from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
 import { useState, useEffect } from 'react';
-import db, { auth, doc } from '../../../../../../configs/firebase';
+import db, { auth, doc, functions, httpsCallable } from '../../../../../../configs/firebase';
 import LoadingOverlay from '../../../../../ui/LoadingOverlay';
 import ErrorDialog from '../../../../../ui/ErrorDialog';
 
@@ -18,11 +19,28 @@ import ErrorDialog from '../../../../../ui/ErrorDialog';
 //   storeZipCode: string;
 //   storeAddress1: string;
 //   storeAddress2: string;
+//   storeUrl: string;
 //   storeSymbolAddress: string;
 //   storeDescription: string;
 //   storeImageFile: string;
 //   storeCoverImageFile: string;
 // }
+
+interface VerifyKycRequest {
+  userId: string;
+  storeId: string;
+}
+
+interface VerifyKycResponse {
+  emailVerified: boolean;
+  userKycVerified: boolean;
+  storeEmailVerified: boolean;
+  storePhoneNumberVerified: boolean;
+  storeAddressVerified: boolean;
+  storeKycVerified: boolean;
+}
+
+const httpsOnCallVerifyKyc = httpsCallable<VerifyKycRequest, VerifyKycResponse>(functions, 'httpsOnCallVerifyKyc');
 
 const Store = () => {
   const navigate = useNavigate();
@@ -38,22 +56,62 @@ const Store = () => {
     },
   );
   const [storeExists, setStoreExists] = useState(false);
+  const [storeKyc, setStoreKyc] = useState<VerifyKycResponse>({
+    emailVerified: false,
+    userKycVerified: false,
+    storeEmailVerified: false,
+    storePhoneNumberVerified: false,
+    storeAddressVerified: false,
+    storeKycVerified: false,
+  });
+  const [storeKycLoading, setStoreKycLoading] = useState(false);
+  const [storeKycError, setStoreKycError] = useState<Error | undefined>(undefined);
 
   useEffect(() => {
-    if (!(!loading && user && userId && userId === user.uid)) {
+    if (loading || userDocLoading || storeDocLoading) {
+      return;
+    }
+
+    if (!(user && userId && userId === user.uid)) {
       navigate('/auth/sign-in/');
       return;
     }
-    if (!(!loading && user && user.emailVerified)) {
-      navigate(`/users/${userId ?? ''}/verify-user-email`);
-      return;
-    }
+
     if (userId !== storeId) {
       navigate(`/users/${userId}`);
+      return;
     }
+
     const isExists = !!userDoc?.exists() && !!storeDoc?.exists();
     setStoreExists(isExists);
-  }, [userId, storeId, user, loading, navigate, userDoc, storeDoc, setStoreExists]);
+
+    setStoreKycLoading(true);
+    httpsOnCallVerifyKyc({ userId, storeId })
+      .then((res) => {
+        console.log(res);
+        setStoreKyc(res.data);
+      })
+      .catch((err) => {
+        setStoreKycError(err as Error);
+      })
+      .finally(() => {
+        setStoreKycLoading(false);
+      });
+  }, [
+    userId,
+    storeId,
+    user,
+    loading,
+    navigate,
+    userDoc,
+    userDocLoading,
+    storeDoc,
+    storeDocLoading,
+    setStoreExists,
+    setStoreKycLoading,
+    setStoreKyc,
+    setStoreKycError,
+  ]);
 
   const handleStoreCreate = () => {
     if (!userId) {
@@ -80,6 +138,7 @@ const Store = () => {
         storeZipCode: storeDoc?.data()?.storeZipCode ?? '',
         storeAddress1: storeDoc?.data()?.storeAddress1 ?? '',
         storeAddress2: storeDoc?.data()?.storeAddress2 ?? '',
+        storeUrl: storeDoc?.data()?.storeUrl ?? '',
         storeSymbolAddress: storeDoc?.data()?.storeSymbolAddress ?? '',
         storeDescription: storeDoc?.data()?.storeDescription ?? '',
         storeImageFile: storeDoc?.data()?.storeImageFile ?? '',
@@ -107,11 +166,39 @@ const Store = () => {
               <div>{storeDoc?.data()?.storeName}</div>
             </div>
             <div>
-              <h3>店舗メールアドレス</h3>
+              <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
+                <h3>店舗メールアドレス</h3>
+                {storeKyc.storeEmailVerified ? (
+                  <CheckIcon color="success" />
+                ) : (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    component={Link}
+                    to={`/users/${userId}/stores/${storeId}/verify-store-email`}
+                  >
+                    確認
+                  </Button>
+                )}
+              </Box>
               <div>{storeDoc?.data()?.storeEmail}</div>
             </div>
             <div>
-              <h3>店舗電話番号</h3>
+              <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
+                <h3>店舗電話番号</h3>
+                {storeKyc.storePhoneNumberVerified ? (
+                  <CheckIcon color="success" />
+                ) : (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    component={Link}
+                    to={`/users/${userId}/stores/${storeId}/verify-store-phone-number`}
+                  >
+                    確認
+                  </Button>
+                )}
+              </Box>
               <div>{storeDoc?.data()?.storePhoneNumber}</div>
             </div>
             <div>
@@ -123,8 +210,28 @@ const Store = () => {
               <div>{storeDoc?.data()?.storeAddress1}</div>
             </div>
             <div>
-              <h3>店舗住所(番地・建物名・部屋番号)</h3>
+              <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
+                <h3>店舗住所(番地・建物名・部屋番号)</h3>
+                {storeKyc.storeAddressVerified ? (
+                  <CheckIcon color="success" />
+                ) : (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    component={Link}
+                    to={`/users/${userId}/stores/${storeId}/verify-store-address`}
+                  >
+                    確認
+                  </Button>
+                )}
+              </Box>
               <div>{storeDoc?.data()?.storeAddress2}</div>
+            </div>
+            <div>
+              <h3>店舗URL</h3>
+              <div>
+                <a href={storeDoc?.data()?.storeUrl}>{storeDoc?.data()?.storeUrl}</a>
+              </div>
             </div>
             <div>
               <h3>店舗Symbolアドレス(テストネット)</h3>
@@ -161,10 +268,11 @@ const Store = () => {
           </Stack>
         </Container>
       )}
-      <LoadingOverlay open={loading || userDocLoading || storeDocLoading} />
+      <LoadingOverlay open={loading || userDocLoading || storeDocLoading || storeKycLoading} />
       <ErrorDialog open={!!error} error={error} />
       <ErrorDialog open={!!userDocError} error={userDocError} />
       <ErrorDialog open={!!storeDocError} error={storeDocError} />
+      <ErrorDialog open={!!storeKycError} error={storeKycError} />
     </>
   );
 };

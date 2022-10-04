@@ -7,12 +7,13 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { useDocument } from 'react-firebase-hooks/firestore';
 import { useNavigate, useParams } from 'react-router-dom';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Container, Stack, TextField } from '@mui/material';
 import * as yup from 'yup';
 import db, { auth, doc, setDoc } from '../../../../configs/firebase';
 import LoadingOverlay from '../../../ui/LoadingOverlay';
 import ErrorDialog from '../../../ui/ErrorDialog';
+import { VerifyKycResponse, httpsOnCallVerifyKyc } from '../../../../hooks/kyc';
 
 interface UserCreateFormInput {
   name: string;
@@ -51,6 +52,25 @@ const UserCreate = () => {
   const [userDoc, userDocLoading, userDocError] = useDocument(doc(db, 'users', userId || ''), {
     snapshotListenOptions: { includeMetadataChanges: true },
   });
+  const [kyc, setKyc] = useState<VerifyKycResponse>({
+    emailVerified: false,
+    userKycVerified: false,
+    storeEmailVerified: false,
+    storePhoneNumberVerified: false,
+    storeAddressVerified: false,
+    storeKycVerified: false,
+  });
+
+  const verifyKyc = (tempUserId: string, tempStoreId: string) => {
+    httpsOnCallVerifyKyc({ userId: tempUserId, storeId: tempStoreId })
+      .then((res) => {
+        if (!res.data.emailVerified) {
+          navigate(`/users/${tempUserId}/verify-user-email`);
+        }
+        setKyc(res.data);
+      })
+      .catch(() => {});
+  };
 
   const {
     register,
@@ -86,10 +106,8 @@ const UserCreate = () => {
       navigate('/auth/sign-in/');
       return;
     }
-    if (!(!loading && user && user.emailVerified)) {
-      navigate(`/users/${userId ?? ''}/verify-user-email`);
-    }
-  }, [userId, user, loading, navigate]);
+    verifyKyc(userId, userId);
+  }, [userId, user, loading, navigate, setKyc]);
 
   return (
     <>

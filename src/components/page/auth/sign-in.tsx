@@ -57,11 +57,7 @@ const SignIn = () => {
     if (!userCredential?.user?.uid) {
       return;
     }
-    if (!userCredential.user.emailVerified) {
-      navigate(`/users/${userCredential.user.uid}/verify-user-email`);
-      return;
-    }
-    navigate(`/users/${userCredential?.user?.uid}`);
+    navigate(`/users/${userCredential?.user?.uid}/verify-user-email`);
   }, [userCredential, navigate]);
 
   const onSubmit: SubmitHandler<SignInFormInput> = async (data) => {

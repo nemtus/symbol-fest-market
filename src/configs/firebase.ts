@@ -1,5 +1,5 @@
 import { getApps, getApp, initializeApp } from 'firebase/app';
-import { getAuth, signOut, EmailAuthProvider, connectAuthEmulator } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signOut, EmailAuthProvider, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, collection, doc, addDoc, setDoc, connectFirestoreEmulator } from 'firebase/firestore';
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
@@ -29,5 +29,16 @@ if (process.env.NODE_ENV === 'development') {
   connectStorageEmulator(storage, 'localhost', 9199);
 }
 
-export { auth, signOut, emailAuthProvider, collection, doc, setDoc, addDoc, functions, httpsCallable };
+export {
+  auth,
+  onAuthStateChanged,
+  signOut,
+  emailAuthProvider,
+  collection,
+  doc,
+  setDoc,
+  addDoc,
+  functions,
+  httpsCallable,
+};
 export default db;
