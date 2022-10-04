@@ -61,17 +61,6 @@ const UserCreate = () => {
     storeKycVerified: false,
   });
 
-  const verifyKyc = (tempUserId: string, tempStoreId: string) => {
-    httpsOnCallVerifyKyc({ userId: tempUserId, storeId: tempStoreId })
-      .then((res) => {
-        if (!res.data.emailVerified) {
-          navigate(`/users/${tempUserId}/verify-user-email`);
-        }
-        setKyc(res.data);
-      })
-      .catch(() => {});
-  };
-
   const {
     register,
     handleSubmit,
@@ -106,7 +95,14 @@ const UserCreate = () => {
       navigate('/auth/sign-in/');
       return;
     }
-    verifyKyc(userId, userId);
+    httpsOnCallVerifyKyc({ userId, storeId: userId })
+      .then((res) => {
+        if (!res.data.emailVerified) {
+          navigate(`/users/${userId}/verify-user-email`);
+        }
+        setKyc(res.data);
+      })
+      .catch(() => {});
   }, [userId, user, loading, navigate, setKyc]);
 
   return (
@@ -162,7 +158,13 @@ const UserCreate = () => {
             error={'symbolAddress' in errors}
             helperText={errors.symbolAddress?.message}
           />
-          <Button color="primary" variant="contained" size="large" onClick={handleSubmit(onSubmit)}>
+          <Button
+            color="primary"
+            variant="contained"
+            size="large"
+            onClick={handleSubmit(onSubmit)}
+            disabled={!kyc.userKycVerified}
+          >
             登録して保存
           </Button>
         </Stack>

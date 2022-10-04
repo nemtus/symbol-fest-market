@@ -85,7 +85,6 @@ const VerifyStoreAddress = () => {
     };
     httpsOnCallChallengeToVerifyStoreAddress(challengeToVerifyStoreAddressRequest)
       .then((res) => {
-        console.log(res);
         if (res.data.storeAddressVerified) {
           navigate(`/users/${userId}/stores/${storeId}/`);
         }

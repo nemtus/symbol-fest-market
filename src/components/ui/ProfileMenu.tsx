@@ -16,11 +16,9 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import React, { useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, signOut } from '../../configs/firebase';
-// import { AuthStatusContext } from '../../context/AuthContext';
 
 const ProfileMenu = () => {
   const navigate = useNavigate();
-  // const authStatus = useContext(AuthStatusContext);
   const [user, userLoading, userError] = useAuthState(auth);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 

@@ -85,7 +85,6 @@ const Item = () => {
     setKycStatusLoading(true);
     httpsOnCallVerifyKyc({ userId, storeId })
       .then((res) => {
-        console.log(res);
         setKycStatus(res.data);
         if (!res.data.userKycVerified) {
           navigate(`users/${userId}/verify-user-email`);

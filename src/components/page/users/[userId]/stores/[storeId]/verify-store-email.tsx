@@ -85,7 +85,6 @@ const VerifyStoreEmail = () => {
     };
     httpsOnCallChallengeToVerifyStoreEmail(challengeToVerifyStoreEmailRequest)
       .then((res) => {
-        console.log(res);
         if (res.data.storeEmailVerified) {
           navigate(`/users/${userId}/stores/${storeId}/`);
         }

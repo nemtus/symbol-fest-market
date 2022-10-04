@@ -85,7 +85,6 @@ const VerifyStorePhoneNumber = () => {
     };
     httpsOnCallChallengeToVerifyStorePhoneNumber(challengeToVerifyStorePhoneNumberRequest)
       .then((res) => {
-        console.log(res);
         if (res.data.storePhoneNumberVerified) {
           navigate(`/users/${userId}/stores/${storeId}/`);
         }

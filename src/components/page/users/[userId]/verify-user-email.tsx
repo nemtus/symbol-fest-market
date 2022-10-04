@@ -37,16 +37,11 @@ const VerifyUserEmail = () => {
   const verifyKycStatus = (tempUserId: string, tempStoreId: string): void => {
     httpsOnCallVerifyKyc({ userId: tempUserId, storeId: tempStoreId })
       .then((res) => {
-        console.log(res);
         const emailVerifiedResult = res.data.emailVerified;
         setEmailVerified(emailVerifiedResult);
         if (!emailVerifiedResult) {
           throw Error('ご登録のメールアドレス宛に届いている認証メールのリンクをクリックした後、再度お試しください。');
         }
-        console.log(emailVerifiedResult);
-        console.log(userDoc?.exists());
-        console.log(emailVerifiedResult && userDoc?.exists());
-        console.log(userDoc);
         if (userDoc === undefined) {
           return;
         }

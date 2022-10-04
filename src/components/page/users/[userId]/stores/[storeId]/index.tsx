@@ -88,7 +88,6 @@ const Store = () => {
     setStoreKycLoading(true);
     httpsOnCallVerifyKyc({ userId, storeId })
       .then((res) => {
-        console.log(res);
         setStoreKyc(res.data);
       })
       .catch((err) => {
