@@ -34,8 +34,13 @@ const VerifyUserEmail = () => {
   const [emailVerifiedError, setEmailVerifiedError] = useState<Error | undefined>(undefined);
   const [user, loading, error] = useAuthState(auth);
 
-  const verifyKycStatus = (tempUserId: string, tempStoreId: string): void => {
-    httpsOnCallVerifyKyc({ userId: tempUserId, storeId: tempStoreId })
+  useEffect(() => {
+    if (!(!loading && user && userId && userId === user.uid)) {
+      navigate('/auth/sign-in/');
+      return;
+    }
+    setEmailVerifiedLoading(true);
+    httpsOnCallVerifyKyc({ userId, storeId: userId })
       .then((res) => {
         const emailVerifiedResult = res.data.emailVerified;
         setEmailVerified(emailVerifiedResult);
@@ -46,9 +51,9 @@ const VerifyUserEmail = () => {
           return;
         }
         if (emailVerifiedResult && userDoc.exists()) {
-          navigate(`/users/${tempUserId}`);
+          navigate(`/users/${userId}`);
         } else {
-          navigate(`/users/${tempUserId}/create`);
+          navigate(`/users/${userId}/create`);
         }
       })
       .catch((err) => {
@@ -57,14 +62,6 @@ const VerifyUserEmail = () => {
       .finally(() => {
         setEmailVerifiedLoading(false);
       });
-  };
-
-  useEffect(() => {
-    if (!(!loading && user && userId && userId === user.uid)) {
-      navigate('/auth/sign-in/');
-      return;
-    }
-    verifyKycStatus(userId, userId);
   }, [user, loading, userDoc, userId, setEmailVerified, navigate]);
 
   const handleEmailVerify = () => {
@@ -73,7 +70,28 @@ const VerifyUserEmail = () => {
       setEmailVerifiedError(Error("Can't get user id"));
       return;
     }
-    verifyKycStatus(user.uid, user.uid);
+    httpsOnCallVerifyKyc({ userId: user.uid, storeId: user.uid })
+      .then((res) => {
+        const emailVerifiedResult = res.data.emailVerified;
+        setEmailVerified(emailVerifiedResult);
+        if (!emailVerifiedResult) {
+          throw Error('ご登録のメールアドレス宛に届いている認証メールのリンクをクリックした後、再度お試しください。');
+        }
+        if (userDoc === undefined) {
+          return;
+        }
+        if (emailVerifiedResult && userDoc.exists()) {
+          navigate(`/users/${user.uid}`);
+        } else {
+          navigate(`/users/${user.uid}/create`);
+        }
+      })
+      .catch((err) => {
+        setEmailVerifiedError(err as Error);
+      })
+      .finally(() => {
+        setEmailVerifiedLoading(false);
+      });
   };
 
   return (

@@ -19,7 +19,7 @@ import { auth, signOut } from '../../configs/firebase';
 
 const ProfileMenu = () => {
   const navigate = useNavigate();
-  const [user, userLoading, userError] = useAuthState(auth);
+  const [user] = useAuthState(auth);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleClose = () => {
