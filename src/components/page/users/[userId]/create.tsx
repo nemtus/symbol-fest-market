@@ -10,10 +10,9 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
 import { Button, Container, Stack, TextField } from '@mui/material';
 import * as yup from 'yup';
-import db, { auth, doc, setDoc } from '../../../../configs/firebase';
+import db, { auth, doc, setDoc, httpsCallable, functions } from '../../../../configs/firebase';
 import LoadingOverlay from '../../../ui/LoadingOverlay';
 import ErrorDialog from '../../../ui/ErrorDialog';
-import { VerifyKycResponse, httpsOnCallVerifyKyc } from '../../../../hooks/kyc';
 
 interface UserCreateFormInput {
   name: string;
@@ -44,6 +43,22 @@ const schema = yup.object({
     .required('必須です')
     .matches(/^T[A-Z0-9]{38}$/, 'SymbolアドレスはTから始まる39文字の半角大文字英数字で入力してください'),
 });
+
+interface VerifyKycRequest {
+  userId: string;
+  storeId: string;
+}
+
+interface VerifyKycResponse {
+  emailVerified: boolean;
+  userKycVerified: boolean;
+  storeEmailVerified: boolean;
+  storePhoneNumberVerified: boolean;
+  storeAddressVerified: boolean;
+  storeKycVerified: boolean;
+}
+
+const httpsOnCallVerifyKyc = httpsCallable<VerifyKycRequest, VerifyKycResponse>(functions, 'httpsOnCallVerifyKyc');
 
 const UserCreate = () => {
   const navigate = useNavigate();
