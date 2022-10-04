@@ -100,14 +100,13 @@ const UserUpdate = () => {
   };
 
   useEffect(() => {
-    if (!(!loading && user && userId && userId === user.uid)) {
-      navigate('/auth/sign-in/');
+    if (loading || userDocLoading) {
       return;
     }
-    if (!(!loading && user && user.emailVerified)) {
-      navigate(`/users/${userId ?? ''}/verify-user-email`);
+    if (!(user && userId && userId === user.uid)) {
+      navigate('/auth/sign-in/');
     }
-  }, [userId, user, loading, navigate]);
+  }, [userId, user, loading, userDocLoading, navigate]);
 
   return (
     <>

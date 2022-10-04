@@ -10,9 +10,21 @@ export const userOnUpdate = functions
     try {
       const userId = context.params.userId as string;
       const authUser = await auth.getUser(userId);
-      const { emailVerified } = authUser;
+      const { emailVerified, customClaims } = authUser;
       const userKycVerified = emailVerified;
-      await auth.setCustomUserClaims(userId, { userKycVerified });
+      const storeEmailVerified = !!customClaims?.storeEmailVerified;
+      const storePhoneNumberVerified = !!customClaims?.storePhoneNumberVerified;
+      const storeAddressVerified = !!customClaims?.storeAddressVerified;
+      const storeKycVerified = storeEmailVerified && storePhoneNumberVerified && storeAddressVerified;
+      const kycStatus = {
+        emailVerified,
+        userKycVerified,
+        storeKycVerified,
+        storeEmailVerified,
+        storePhoneNumberVerified,
+        storeAddressVerified,
+      };
+      await auth.setCustomUserClaims(userId, kycStatus);
     } catch (error) {
       functions.logger.warn('itemOnCreate', error);
     }

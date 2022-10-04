@@ -7,10 +7,10 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { useDocument } from 'react-firebase-hooks/firestore';
 import { useNavigate, useParams } from 'react-router-dom';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Container, Stack, TextField } from '@mui/material';
 import * as yup from 'yup';
-import db, { auth, doc, setDoc } from '../../../../configs/firebase';
+import db, { auth, doc, setDoc, httpsCallable, functions } from '../../../../configs/firebase';
 import LoadingOverlay from '../../../ui/LoadingOverlay';
 import ErrorDialog from '../../../ui/ErrorDialog';
 
@@ -44,12 +44,36 @@ const schema = yup.object({
     .matches(/^T[A-Z0-9]{38}$/, 'SymbolアドレスはTから始まる39文字の半角大文字英数字で入力してください'),
 });
 
+interface VerifyKycRequest {
+  userId: string;
+  storeId: string;
+}
+
+interface VerifyKycResponse {
+  emailVerified: boolean;
+  userKycVerified: boolean;
+  storeEmailVerified: boolean;
+  storePhoneNumberVerified: boolean;
+  storeAddressVerified: boolean;
+  storeKycVerified: boolean;
+}
+
+const httpsOnCallVerifyKyc = httpsCallable<VerifyKycRequest, VerifyKycResponse>(functions, 'httpsOnCallVerifyKyc');
+
 const UserCreate = () => {
   const navigate = useNavigate();
   const { userId } = useParams();
   const [user, loading, error] = useAuthState(auth);
   const [userDoc, userDocLoading, userDocError] = useDocument(doc(db, 'users', userId || ''), {
     snapshotListenOptions: { includeMetadataChanges: true },
+  });
+  const [kyc, setKyc] = useState<VerifyKycResponse>({
+    emailVerified: false,
+    userKycVerified: false,
+    storeEmailVerified: false,
+    storePhoneNumberVerified: false,
+    storeAddressVerified: false,
+    storeKycVerified: false,
   });
 
   const {
@@ -86,10 +110,15 @@ const UserCreate = () => {
       navigate('/auth/sign-in/');
       return;
     }
-    if (!(!loading && user && user.emailVerified)) {
-      navigate(`/users/${userId ?? ''}/verify-user-email`);
-    }
-  }, [userId, user, loading, navigate]);
+    httpsOnCallVerifyKyc({ userId, storeId: userId })
+      .then((res) => {
+        if (!res.data.emailVerified) {
+          navigate(`/users/${userId}/verify-user-email`);
+        }
+        setKyc(res.data);
+      })
+      .catch(() => {});
+  }, [userId, user, loading, navigate, setKyc]);
 
   return (
     <>
@@ -144,7 +173,13 @@ const UserCreate = () => {
             error={'symbolAddress' in errors}
             helperText={errors.symbolAddress?.message}
           />
-          <Button color="primary" variant="contained" size="large" onClick={handleSubmit(onSubmit)}>
+          <Button
+            color="primary"
+            variant="contained"
+            size="large"
+            onClick={handleSubmit(onSubmit)}
+            disabled={!kyc.userKycVerified}
+          >
             登録して保存
           </Button>
         </Stack>

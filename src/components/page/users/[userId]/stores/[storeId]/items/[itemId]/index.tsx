@@ -7,7 +7,7 @@ import { useDocument } from 'react-firebase-hooks/firestore';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Container, Stack } from '@mui/material';
 import { useState, useEffect } from 'react';
-import db, { auth, doc } from '../../../../../../../../configs/firebase';
+import db, { auth, doc, httpsCallable, functions } from '../../../../../../../../configs/firebase';
 import LoadingOverlay from '../../../../../../../ui/LoadingOverlay';
 import ErrorDialog from '../../../../../../../ui/ErrorDialog';
 
@@ -20,6 +20,22 @@ import ErrorDialog from '../../../../../../../ui/ErrorDialog';
 //   itemImageFile: string;
 //   itemStatus: 'ON_SALE' | 'SOLD_OUT';
 // }
+
+interface VerifyKycRequest {
+  userId: string;
+  storeId: string;
+}
+
+interface VerifyKycResponse {
+  emailVerified: boolean;
+  userKycVerified: boolean;
+  storeEmailVerified: boolean;
+  storePhoneNumberVerified: boolean;
+  storeAddressVerified: boolean;
+  storeKycVerified: boolean;
+}
+
+const httpsOnCallVerifyKyc = httpsCallable<VerifyKycRequest, VerifyKycResponse>(functions, 'httpsOnCallVerifyKyc');
 
 const Item = () => {
   const navigate = useNavigate();
@@ -41,22 +57,62 @@ const Item = () => {
     },
   );
   const [itemExists, setItemExists] = useState(false);
+  const [kycStatus, setKycStatus] = useState<VerifyKycResponse>({
+    emailVerified: false,
+    userKycVerified: false,
+    storeEmailVerified: false,
+    storePhoneNumberVerified: false,
+    storeAddressVerified: false,
+    storeKycVerified: false,
+  });
+  const [kycStatusLoading, setKycStatusLoading] = useState(false);
+  const [kycStatusError, setKycStatusError] = useState<Error | undefined>(undefined);
 
   useEffect(() => {
-    if (!(!loading && user && userId && userId === user.uid)) {
-      navigate('/auth/sign-in/');
+    if (loading || userDocLoading || storeDocLoading || itemDocLoading) {
       return;
     }
-    if (!(!loading && user && user.emailVerified)) {
-      navigate(`/users/${userId ?? ''}/verify-user-email`);
+    if (!(user && userId && userId === user.uid)) {
+      navigate('/auth/sign-in/');
       return;
     }
     if (userId !== storeId) {
       navigate(`/users/${userId}`);
+      return;
     }
     const isItemExists = !!userDoc?.exists() && !!storeDoc?.exists() && !!itemDoc?.exists();
     setItemExists(isItemExists);
-  }, [userId, storeId, user, loading, navigate, userDoc, storeDoc, itemDoc, setItemExists]);
+    setKycStatusLoading(true);
+    httpsOnCallVerifyKyc({ userId, storeId })
+      .then((res) => {
+        setKycStatus(res.data);
+        if (!res.data.userKycVerified) {
+          navigate(`users/${userId}/verify-user-email`);
+        }
+        if (!res.data.storeKycVerified) {
+          navigate(`users/${userId}/stores/${storeId}`);
+        }
+      })
+      .catch((err) => {
+        setKycStatusError(err as Error);
+      })
+      .finally(() => {
+        setKycStatusLoading(false);
+      });
+  }, [
+    userId,
+    storeId,
+    user,
+    loading,
+    userDocLoading,
+    storeDocLoading,
+    itemDocLoading,
+    navigate,
+    userDoc,
+    storeDoc,
+    itemDoc,
+    setItemExists,
+  ]);
 
   const handleItems = () => {
     if (!userId) {
@@ -124,7 +180,13 @@ const Item = () => {
               <h3>商品画像</h3>
               <div>{itemDoc?.data()?.itemImageFile}</div>
             </div>
-            <Button color="primary" variant="contained" size="large" onClick={handleItemUpdate}>
+            <Button
+              color="primary"
+              variant="contained"
+              size="large"
+              onClick={handleItemUpdate}
+              disabled={!(kycStatus.userKycVerified && kycStatus.storeKycVerified)}
+            >
               商品編集
             </Button>
           </Stack>
@@ -143,11 +205,12 @@ const Item = () => {
           </Stack>
         </Container>
       )}
-      <LoadingOverlay open={loading || userDocLoading || storeDocLoading || itemDocLoading} />
+      <LoadingOverlay open={loading || userDocLoading || storeDocLoading || itemDocLoading || kycStatusLoading} />
       <ErrorDialog open={!!error} error={error} />
       <ErrorDialog open={!!userDocError} error={userDocError} />
       <ErrorDialog open={!!storeDocError} error={storeDocError} />
       <ErrorDialog open={!!itemDocError} error={itemDocError} />
+      <ErrorDialog open={!!kycStatusError} error={kycStatusError} />
     </>
   );
 };

@@ -9,8 +9,16 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { SubmitHandler, useForm, Controller } from 'react-hook-form';
 import { Button, Container, MenuItem, Stack, TextField } from '@mui/material';
 import * as yup from 'yup';
-import { useEffect } from 'react';
-import db, { auth, collection, doc, addDoc, setDoc } from '../../../../../../../../configs/firebase';
+import { useEffect, useState } from 'react';
+import db, {
+  auth,
+  collection,
+  doc,
+  addDoc,
+  setDoc,
+  httpsCallable,
+  functions,
+} from '../../../../../../../../configs/firebase';
 import LoadingOverlay from '../../../../../../../ui/LoadingOverlay';
 import ErrorDialog from '../../../../../../../ui/ErrorDialog';
 
@@ -34,6 +42,22 @@ const schema = yup.object({
     .matches(/^(ON_SALE|SOLD_OUT)$/, '有効な値を選択してください'),
 });
 
+interface VerifyKycRequest {
+  userId: string;
+  storeId: string;
+}
+
+interface VerifyKycResponse {
+  emailVerified: boolean;
+  userKycVerified: boolean;
+  storeEmailVerified: boolean;
+  storePhoneNumberVerified: boolean;
+  storeAddressVerified: boolean;
+  storeKycVerified: boolean;
+}
+
+const httpsOnCallVerifyKyc = httpsCallable<VerifyKycRequest, VerifyKycResponse>(functions, 'httpsOnCallVerifyKyc');
+
 const ItemCreate = () => {
   const navigate = useNavigate();
   const { userId, storeId } = useParams();
@@ -48,6 +72,16 @@ const ItemCreate = () => {
     },
   );
   const itemCollection = collection(db, 'users', userId ?? '', 'stores', storeId ?? '', 'items');
+  const [kycStatus, setKycStatus] = useState<VerifyKycResponse>({
+    emailVerified: false,
+    userKycVerified: false,
+    storeEmailVerified: false,
+    storePhoneNumberVerified: false,
+    storeAddressVerified: false,
+    storeKycVerified: false,
+  });
+  const [kycStatusLoading, setKycStatusLoading] = useState(false);
+  const [kycStatusError, setKycStatusError] = useState<Error | undefined>(undefined);
 
   const {
     register,
@@ -108,18 +142,46 @@ const ItemCreate = () => {
   };
 
   useEffect(() => {
-    if (!(!loading && user && userId && userId === user.uid)) {
-      navigate('/auth/sign-in/');
+    if (loading || userDocLoading || storeDocLoading) {
       return;
     }
-    if (!(!loading && user && user.emailVerified)) {
-      navigate(`/users/${userId ?? ''}/verify-user-email`);
+    if (!(user && userId && userId === user.uid)) {
+      navigate('/auth/sign-in/');
       return;
     }
     if (userId !== storeId) {
       navigate(`/users/${userId}`);
+      return;
     }
-  }, [userId, storeId, user, loading, navigate]);
+    setKycStatusLoading(true);
+    httpsOnCallVerifyKyc({ userId, storeId })
+      .then((res) => {
+        setKycStatus(res.data);
+        if (!res.data.userKycVerified) {
+          navigate(`users/${userId}/verify-user-email`);
+        }
+        if (!res.data.storeKycVerified) {
+          navigate(`users/${userId}/stores/${storeId}`);
+        }
+      })
+      .catch((err) => {
+        setKycStatusError(err as Error);
+      })
+      .finally(() => {
+        setKycStatusLoading(false);
+      });
+  }, [
+    userId,
+    storeId,
+    user,
+    loading,
+    navigate,
+    userDocLoading,
+    storeDocLoading,
+    setKycStatus,
+    setKycStatusError,
+    setKycStatusLoading,
+  ]);
 
   return (
     <>
@@ -183,15 +245,22 @@ const ItemCreate = () => {
               </TextField>
             )}
           />
-          <Button color="primary" variant="contained" size="large" onClick={handleSubmit(onSubmit)}>
+          <Button
+            color="primary"
+            variant="contained"
+            size="large"
+            onClick={handleSubmit(onSubmit)}
+            disabled={!(kycStatus.userKycVerified && kycStatus.storeKycVerified)}
+          >
             登録して保存
           </Button>
         </Stack>
       </Container>
-      <LoadingOverlay open={loading || userDocLoading || storeDocLoading} />
+      <LoadingOverlay open={loading || userDocLoading || storeDocLoading || kycStatusLoading} />
       <ErrorDialog open={!!error} error={error} />
       <ErrorDialog open={!!userDocError} error={userDocError} />
       <ErrorDialog open={!!storeDocError} error={storeDocError} />
+      <ErrorDialog open={!!kycStatusError} error={kycStatusError} />
     </>
   );
 };

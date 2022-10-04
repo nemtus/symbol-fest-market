@@ -18,8 +18,9 @@ export const userOnCreate = functions
       const storeEmailVerified = false;
       const storePhoneNumberVerified = false;
       const storeAddressVerified = false;
-      const storeKycVerified = storeEmailVerified || storePhoneNumberVerified || storeAddressVerified;
+      const storeKycVerified = storeEmailVerified && storePhoneNumberVerified && storeAddressVerified;
       const kycStatus = {
+        emailVerified,
         userKycVerified,
         storeKycVerified,
         storeEmailVerified,
@@ -45,6 +46,19 @@ export const userOnCreate = functions
       const storeAddressSecret = createRandom(6);
       const storeKycSecret = { storeEmailSecret, storePhoneNumberSecret, storeAddressSecret };
       await storeKycSecretDocRef.set(storeKycSecret, { merge: true });
+
+      await db
+        .collection('mail')
+        .add({
+          to: authUser.email,
+          message: {
+            subject: 'ユーザー登録完了のお知らせ',
+            text: 'ユーザー登録が完了しました。',
+          },
+        })
+        .then(() => {
+          functions.logger.debug('メール送信完了');
+        });
     } catch (error) {
       functions.logger.warn('itemOnCreate', error);
     }
