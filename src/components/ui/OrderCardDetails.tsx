@@ -189,7 +189,7 @@ const OrderCardDetail = (orderProps: OrderProps) => {
                 }`}
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                {`${orderTotalPriceCC ? orderTotalPriceCC.toLocaleString() : ''} ${orderTotalPriceCCUnit ?? ''}`}
+                {`${orderTotalPriceCC ? orderTotalPriceCC.toString() : ''} ${orderTotalPriceCCUnit ?? ''}`}
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 {`to: ${storeSymbolAddress}`}
@@ -220,7 +220,7 @@ const OrderCardDetail = (orderProps: OrderProps) => {
                 }`}
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                {`価格: ${orderTotalPriceCC ? orderTotalPriceCC.toLocaleString() : ''} ${orderTotalPriceCCUnit ?? ''}`}
+                {`価格: ${orderTotalPriceCC ? orderTotalPriceCC.toString() : ''} ${orderTotalPriceCCUnit ?? ''}`}
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 {`to: ${storeSymbolAddress}`}
@@ -251,7 +251,7 @@ const OrderCardDetail = (orderProps: OrderProps) => {
                 }`}
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                {`価格: ${orderTotalPriceCC ? orderTotalPriceCC.toLocaleString() : ''} ${orderTotalPriceCCUnit ?? ''}`}
+                {`価格: ${orderTotalPriceCC ? orderTotalPriceCC.toString() : ''} ${orderTotalPriceCCUnit ?? ''}`}
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 {`to: ${storeSymbolAddress}`}
