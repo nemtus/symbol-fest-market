@@ -2,7 +2,7 @@ import { getApps, getApp, initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut, EmailAuthProvider, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, collection, doc, addDoc, setDoc, connectFirestoreEmulator } from 'firebase/firestore';
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
-import { getStorage, connectStorageEmulator } from 'firebase/storage';
+import { getDownloadURL, getStorage, ref, uploadBytes, connectStorageEmulator } from 'firebase/storage';
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -40,5 +40,9 @@ export {
   addDoc,
   functions,
   httpsCallable,
+  storage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
 };
 export default db;

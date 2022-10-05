@@ -16,9 +16,11 @@
   "dependencies": {
     "axios": "^0.27.2",
     "firebase-admin": "^10.2.0",
-    "firebase-functions": "^3.21.0"
+    "firebase-functions": "^3.21.0",
+    "ws": "^8.9.0"
   },
   "devDependencies": {
+    "@types/ws": "^8.5.3",
     "typescript": "^4.6.4"
   },
   "private": true

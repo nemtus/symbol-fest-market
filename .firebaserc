@@ -1,5 +1,13 @@
 {
   "projects": {
     "default": "symbol-payment-store-test-ym"
+  },
+  "targets": {},
+  "etags": {
+    "symbol-payment-store-test-ym": {
+      "extensionInstances": {
+        "firestore-send-email": "d69e0762ece5dc1ca6cc3d0fceb10e7055342cd8933da7af8dec0a5564b1854d"
+      }
+    }
   }
 }

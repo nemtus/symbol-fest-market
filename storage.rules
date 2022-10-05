@@ -16,5 +16,11 @@ service firebase.storage {
       allow list: if request.auth.token.admin || (request.auth != null && request.auth.uid == userId && request.auth.uid == storeId);
       allow create: if (request.auth.token.admin || (request.auth != null && request.auth.uid == userId && request.auth.uid == storeId)) && request.resource.contentType.matches('image/.*');
     }
+
+    match /users/{userId}/stores/{storeId}/items/{itemId}/images/{allPaths=**} {
+      allow get: if true;
+      allow list: if request.auth.token.admin || (request.auth != null && request.auth.uid == userId && request.auth.uid == storeId);
+      allow create: if (request.auth.token.admin || (request.auth != null && request.auth.uid == userId && request.auth.uid == storeId)) && request.resource.contentType.matches('image/.*');
+    }
   }
 }
