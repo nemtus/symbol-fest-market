@@ -1,53 +1,70 @@
-import { useLocation, useParams } from 'react-router-dom';
-import { useDocument } from 'react-firebase-hooks/firestore';
+import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import OrderCardDetail, { User, Order } from '../../../../../ui/OrderCardDetails';
-import { Store } from '../../../../../ui/StoreCard';
-import { Item } from '../../../../../ui/ItemCard';
-import db, { doc } from '../../../../../../configs/firebase';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import OrderCardDetail, { Order } from '../../../../../ui/OrderCardDetails';
+import db, { doc, onSnapshot, auth } from '../../../../../../configs/firebase';
 import LoadingOverlay from '../../../../../ui/LoadingOverlay';
 import ErrorDialog from '../../../../../ui/ErrorDialog';
 
 const OrderForUser = () => {
-  const location = useLocation();
-  const { user, store, item, orderId, orderAmount } = location.state as {
-    user: User;
-    store: Store;
-    item: Item;
-    orderId: string;
-    orderAmount: number;
-  };
-  const { userId } = useParams();
-  const [orderDoc, orderDocLoading, orderDocError] = useDocument(doc(db, `/users/${user.userId}/orders/${orderId}`));
-  const [exists, setExists] = useState(false);
+  const { userId, orderId } = useParams();
+  const [authUser, authUserLoading, authUserError] = useAuthState(auth);
+  const [orderDocData, setOrderDocData] = useState<Order | undefined>(undefined);
+  const [orderDocLoading, setOrderDocLoading] = useState(false);
+  const [orderDocError, setOrderDocError] = useState<Error | undefined>(undefined);
+  const [orderExists, setOrderExists] = useState(false);
 
   useEffect(() => {
-    // console.log(user);
-    // console.log(store);
-    // console.log(item);
-    // console.log(orderId);
-    // console.log(orderAmount);
     if (!userId) {
-      return;
+      return undefined;
     }
     if (!orderId) {
-      return;
+      return undefined;
     }
-    if (!orderDoc) {
-      return;
-    }
-    setExists(orderDoc?.exists() ?? false);
-  }, [userId, orderId, setExists, orderDoc]);
+    const orderDocRef = doc(db, `/users/${userId}/orders/${orderId}`);
+    setOrderDocLoading(true);
+    const unsubscribe = onSnapshot(
+      orderDocRef,
+      { includeMetadataChanges: true },
+      (res) => {
+        setOrderExists(res.exists());
+        setOrderDocData(res.data() as Order);
+        setOrderDocLoading(false);
+      },
+      (error) => {
+        setOrderDocError(error as Error);
+        setOrderDocLoading(false);
+      },
+    );
+    return function cleanup() {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [userId, orderId, setOrderDocLoading, setOrderExists, setOrderDocData, setOrderDocError]);
 
-  if (!exists) {
+  if (!authUser) {
+    return null;
+  }
+
+  if (!(authUser.uid === userId)) {
+    return null;
+  }
+
+  if (!orderId) {
+    return null;
+  }
+
+  if (!orderExists) {
     return null;
   }
 
   return (
     <>
-      {exists ? <OrderCardDetail order={orderDoc?.data() as Order} key={orderId ?? ''} /> : null}
-      <LoadingOverlay open={orderDocLoading} />
+      {orderExists && orderDocData && orderId ? <OrderCardDetail order={orderDocData} key={orderId} /> : null}
+      <LoadingOverlay open={orderDocLoading || authUserLoading} />
       <ErrorDialog open={!!orderDocError} error={orderDocError} />
+      <ErrorDialog open={!!authUserError} error={authUserError} />
     </>
   );
 };

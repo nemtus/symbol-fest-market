@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { useDocument } from 'react-firebase-hooks/firestore';
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -18,13 +16,18 @@ const PublicStore = () => {
   const [storeExists, setStoreExists] = useState(false);
 
   useEffect(() => {
-    setStoreExists(!!storeDoc?.exists());
-  }, [storeDoc, setStoreExists]);
+    if (!storeId) {
+      return;
+    }
+    setStoreExists(!!(storeDoc?.exists() && storeId));
+  }, [storeId, storeDoc, setStoreExists]);
 
   return (
     <div>
       <h2>店舗詳細</h2>
-      {storeExists ? <StoreCardDetail store={storeDoc?.data() as Store} key={storeDoc?.data()?.storeId} /> : null}
+      {storeExists ? (
+        <StoreCardDetail store={storeDoc?.data() as Store} key={(storeDoc?.data() as Store)?.storeId} />
+      ) : null}
       {storeExists ? <PublicItems /> : null}
       <LoadingOverlay open={storeDocLoading || !storeExists} />
       <ErrorDialog open={!!storeDocError} error={storeDocError} />

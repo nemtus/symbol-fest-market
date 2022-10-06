@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import db, { collection } from '../../../configs/firebase';
 import ErrorDialog from '../../ui/ErrorDialog';
@@ -14,10 +12,6 @@ const PublicStores = () => {
       snapshotListenOptions: { includeMetadataChanges: true },
     },
   );
-
-  // useEffect(() => {
-  //   console.log(storeCollectionData);
-  // }, [storeCollectionData]);
 
   return (
     <div>

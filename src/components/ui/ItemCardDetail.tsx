@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
 import { Box, Card, IconButton } from '@mui/material';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
@@ -11,10 +10,9 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useNavigate } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useEffect, useState } from 'react';
-import { useDocument } from 'react-firebase-hooks/firestore';
 import { ItemProps } from './ItemCard';
 import { Order, User } from './OrderCardDetails';
-import db, { auth, collection, addDoc, doc } from '../../configs/firebase';
+import db, { auth, collection, addDoc, doc, getDoc } from '../../configs/firebase';
 import LoadingOverlay from './LoadingOverlay';
 import ErrorDialog from './ErrorDialog';
 
@@ -25,29 +23,41 @@ const ItemCardDetail = (itemProps: ItemProps) => {
   const {
     storeId,
     storeName,
-    storeEmail,
-    storePhoneNumber,
-    storeZipCode,
-    storeAddress1,
-    storeAddress2,
-    storeUrl,
-    storeSymbolAddress,
+    // storeEmail,
+    // storePhoneNumber,
+    // storeZipCode,
+    // storeAddress1,
+    // storeAddress2,
+    // storeUrl,
+    // storeSymbolAddress,
     storeDescription,
     storeImageFile,
-    storeCoverImageFile,
+    // storeCoverImageFile,
   } = store;
   const [authUser, authUserLoading, authUserError] = useAuthState(auth);
-  const [userDoc, userDocLoading, userDocError] = useDocument(doc(db, `/users/${authUser?.uid ?? ''}`));
-  const [user, setUser] = useState<User | undefined>(userDoc?.data() as User);
+  const [userDocLoading, setUserDocLoading] = useState(false);
+  const [userDocError, setUserDocError] = useState<Error | undefined>(undefined);
+  const [user, setUser] = useState<User | undefined>(undefined);
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
   const [purchaseError, setPurchaseError] = useState<Error | undefined>(undefined);
-  const orderCollection = collection(db, `/users/${authUser?.uid ?? ''}/orders`);
 
   useEffect(() => {
-    if (!userDoc?.data()) {
+    if (!authUser) {
       return;
     }
-    setUser(userDoc?.data() as User);
-  }, [setUser, userDoc]);
+    setUserDocLoading(true);
+    const userDocRef = doc(db, `/users/${authUser.uid}`);
+    getDoc(userDocRef)
+      .then((userDoc) => {
+        setUser(userDoc.data() as User);
+      })
+      .catch((error) => {
+        setUserDocError(error as Error);
+      })
+      .finally(() => {
+        setUserDocLoading(false);
+      });
+  }, [authUser, setUserDocLoading, setUser, setUserDocError]);
 
   const handleStoreAvatarClick = () => {
     navigate(`/stores/${storeId}`);
@@ -57,11 +67,31 @@ const ItemCardDetail = (itemProps: ItemProps) => {
     navigate(`/stores/${storeId}/items/${itemId}`);
   };
 
-  const handlePurchaseClick = async () => {
+  const handlePurchaseClick = () => {
     if (!authUser) {
       setPurchaseError(Error('買い物をするにはログインしてください'));
+      return;
     }
     if (!user) {
+      setPurchaseError(Error('買い物に必要なユーザー情報を取得できません'));
+      return;
+    }
+    if (!(authUser.uid === user.userId)) {
+      setPurchaseError(Error('認証ユーザーとユーザーの情報が一致しません'));
+      return;
+    }
+    if (
+      !user.userId ||
+      !user.name ||
+      !user.phoneNumber ||
+      !user.zipCode ||
+      !user.address1 ||
+      !user.address2 ||
+      !user.symbolAddress
+    ) {
+      setPurchaseError(
+        Error('買い物に必要なユーザー情報が不足しています。まず最初に必要なユーザー情報を入力してください。'),
+      );
       return;
     }
     const orderAmount = 1;
@@ -71,17 +101,18 @@ const ItemCardDetail = (itemProps: ItemProps) => {
       ...item,
       orderAmount,
     };
-    const orderDocRef = await addDoc(orderCollection, order);
-    const orderId = orderDocRef.id;
-    navigate(`/users/${user.userId}/orders/${orderDocRef.id}`, {
-      state: {
-        user,
-        store,
-        item,
-        orderId,
-        orderAmount,
-      },
-    });
+    const orderCollection = collection(db, `/users/${authUser.uid}/orders`);
+    setPurchaseLoading(true);
+    addDoc(orderCollection, order)
+      .then((orderDocRef) => {
+        navigate(`/users/${user.userId}/orders/${orderDocRef.id}`);
+      })
+      .catch((err) => {
+        setPurchaseError(err as Error);
+      })
+      .finally(() => {
+        setPurchaseLoading(false);
+      });
   };
 
   return (
@@ -121,8 +152,9 @@ const ItemCardDetail = (itemProps: ItemProps) => {
           </CardActions>
         </Card>
       </Box>
-      <LoadingOverlay open={authUserLoading} />
+      <LoadingOverlay open={authUserLoading || userDocLoading || purchaseLoading} />
       <ErrorDialog open={!!authUserError} error={authUserError} />
+      <ErrorDialog open={!!userDocError} error={userDocError} />
       <ErrorDialog open={!!purchaseError} error={purchaseError} />
     </>
   );

@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { useCollectionData, useDocument } from 'react-firebase-hooks/firestore';
 import { useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import db, { collection, doc } from '../../../../../configs/firebase';
 import ErrorDialog from '../../../../ui/ErrorDialog';
 import LoadingOverlay from '../../../../ui/LoadingOverlay';
@@ -20,15 +19,27 @@ const PublicItems = () => {
       snapshotListenOptions: { includeMetadataChanges: true },
     },
   );
+  const [itemsExist, setItemsExist] = useState(false);
 
-  // useEffect(() => {
-  //   console.log(itemCollectionData);
-  // }, [itemCollectionData]);
+  useEffect(() => {
+    if (!storeId) {
+      return;
+    }
+    if (storeDocLoading) {
+      return;
+    }
+    if (itemCollectionDataLoading) {
+      return;
+    }
+    if (storeDoc?.exists() && itemCollectionData?.length) {
+      setItemsExist(true);
+    }
+  }, [storeId, storeDocLoading, itemCollectionDataLoading, storeDoc, itemCollectionData, setItemsExist]);
 
   return (
     <div>
       <h2>商品一覧</h2>
-      <ItemList store={storeDoc?.data() as Store} items={itemCollectionData as Item[]} />
+      {itemsExist ? <ItemList store={storeDoc?.data() as Store} items={itemCollectionData as Item[]} /> : null}
       <LoadingOverlay open={storeDocLoading || itemCollectionDataLoading} />
       <ErrorDialog open={!!storeDocError} error={storeDocError} />
       <ErrorDialog open={!!itemCollectionDataError} error={itemCollectionDataError} />

@@ -1,6 +1,15 @@
 import { getApps, getApp, initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut, EmailAuthProvider, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, collection, doc, addDoc, setDoc, connectFirestoreEmulator } from 'firebase/firestore';
+import {
+  getFirestore,
+  collection,
+  doc,
+  addDoc,
+  setDoc,
+  getDoc,
+  onSnapshot,
+  connectFirestoreEmulator,
+} from 'firebase/firestore';
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
 import { getDownloadURL, getStorage, ref, uploadBytes, connectStorageEmulator } from 'firebase/storage';
 
@@ -38,6 +47,8 @@ export {
   doc,
   setDoc,
   addDoc,
+  getDoc,
+  onSnapshot,
   functions,
   httpsCallable,
   storage,

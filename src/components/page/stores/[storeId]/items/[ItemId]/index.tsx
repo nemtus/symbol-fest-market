@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { useDocument } from 'react-firebase-hooks/firestore';
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -21,12 +19,6 @@ const PublicItem = () => {
       snapshotListenOptions: { includeMetadataChanges: true },
     },
   );
-  // const [itemCollectionData, itemCollectionDataLoading, itemCollectionDataError] = useCollectionData(
-  //   collection(db, `stores/${storeId ?? ''}/items/${itemId ?? ''}`),
-  //   {
-  //     snapshotListenOptions: { includeMetadataChanges: true },
-  //   },
-  // );
   const [exists, setExists] = useState(false);
 
   useEffect(() => {
@@ -40,7 +32,7 @@ const PublicItem = () => {
         <ItemCardDetail
           store={storeDoc?.data() as Store}
           item={itemDoc?.data() as Item}
-          key={storeDoc?.data()?.storeId}
+          key={(storeDoc?.data() as Store).storeId}
         />
       ) : null}
       <LoadingOverlay open={storeDocLoading || itemDocLoading || !exists} />
