@@ -8,7 +8,7 @@ import { db, auth } from '../utils/firebase/admin';
 const NODE_DOMAIN = 'symbol-test.next-web-technology.com';
 
 export const orderOnUpdate = functions
-  .runWith({ memory: '128MB' })
+  .runWith({ memory: '128MB', timeoutSeconds: 540 })
   .firestore.document('users/{userId}/orders/{orderId}')
   .onUpdate(async (data, context): Promise<void> => {
     functions.logger.debug('orderOnUpdate', data, { structuredData: true });
