@@ -100,8 +100,11 @@ export const orderOnUpdate = functions
             functions.logger.debug('orderOnUpdate', res.data.transaction.mosaics[0], { structuredData: true });
             const xymAmount = res.data.transaction.mosaics[0].amount as string;
             const orderTotalPriceCC = data.after.data().orderTotalPriceCC as number;
-            // Todo: need to check from address and message
-            if (xymAmount === Math.round(orderTotalPriceCC * 1000000).toString()) {
+            const txMessageHexString = res.data.transaction.message as string;
+            functions.logger.debug(txMessageHexString);
+            const txMessage = Buffer.from(txMessageHexString.slice(2), 'hex').toString('utf-8').trim();
+            functions.logger.debug(txMessage);
+            if (xymAmount === Math.round(orderTotalPriceCC * 1000000).toString() && orderId === txMessage) {
               functions.logger.debug('orderOnUpdate', { xymAmount, orderTotalPriceCC }, { structuredData: true });
               const orderTxHash = res.data.meta.hash as string;
               const orderStatus = 'UNCONFIRMED';
@@ -122,8 +125,11 @@ export const orderOnUpdate = functions
           if (res.topic === `confirmedAdded/${data.after.data().storeSymbolAddress as string}`) {
             const xymAmount = res.data.transaction.mosaics[0].amount as string;
             const orderTotalPriceCC = data.after.data().orderTotalPriceCC as number;
-            // Todo: need to check from address and message
-            if (xymAmount === Math.round(orderTotalPriceCC * 1000000).toString()) {
+            const txMessageHexString = res.data.transaction.message as string;
+            functions.logger.debug(txMessageHexString);
+            const txMessage = Buffer.from(txMessageHexString.slice(2), 'hex').toString('utf-8').trim();
+            functions.logger.debug(txMessage);
+            if (xymAmount === Math.round(orderTotalPriceCC * 1000000).toString() && orderId === txMessage) {
               functions.logger.debug('orderOnUpdate', { xymAmount, orderTotalPriceCC }, { structuredData: true });
               const orderTxHash = res.data.meta.hash as string;
               const orderStatus = 'CONFIRMED';
