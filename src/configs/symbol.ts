@@ -12,7 +12,7 @@ export const createTransactionPayload = async (
 ): Promise<string | undefined> => {
   // epochAdjustment, networkCurrencyMosaicIdの取得のためNetworkRoutesApi.getNetworkPropertiesを呼び出す
   const configurationParameters = {
-    basePath: `http://${NODE_DOMAIN}:3000`,
+    basePath: `https://${NODE_DOMAIN}:3001`,
   };
   const configuration = new Configuration(configurationParameters);
   const networkRoutesApi = new NetworkRoutesApi(configuration);
@@ -97,7 +97,7 @@ export interface TransactionQrInterface {
 
 export const createTransactionQrData = async (transactionPayload: string): Promise<TransactionQrInterface> => {
   const configurationParameters = {
-    basePath: `http://${NODE_DOMAIN}:3000`,
+    basePath: `https://${NODE_DOMAIN}:3001`,
   };
   const configuration = new Configuration(configurationParameters);
   const nodeRoutesApi = new NodeRoutesApi(configuration);
