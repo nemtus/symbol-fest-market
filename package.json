@@ -6,6 +6,7 @@
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
     "@hookform/resolvers": "^2.9.8",
+    "@loadable/component": "^5.15.2",
     "@mui/icons-material": "^5.10.6",
     "@mui/material": "^5.10.6",
     "@nemtus/symbol-sdk-openapi-generator-typescript-axios": "^0.1.0",
@@ -51,6 +52,7 @@
     ]
   },
   "devDependencies": {
+    "@types/loadable__component": "^5.13.4",
     "@typescript-eslint/eslint-plugin": "^5.38.0",
     "@typescript-eslint/parser": "^5.38.0",
     "assert": "^2.0.0",
