@@ -9,6 +9,7 @@ import { Box, Button, Container, Stack } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import { useState, useEffect } from 'react';
 import db, { auth, doc, functions, httpsCallable } from '../../../../../../configs/firebase';
+import { SYMBOL_NETWORK_NAME } from '../../../../../../configs/symbol';
 import LoadingOverlay from '../../../../../ui/LoadingOverlay';
 import ErrorDialog from '../../../../../ui/ErrorDialog';
 
@@ -233,7 +234,7 @@ const Store = () => {
               </div>
             </div>
             <div>
-              <h3>店舗Symbolアドレス(テストネット)</h3>
+              <h3>{`店舗Symbolアドレス(${SYMBOL_NETWORK_NAME})`}</h3>
               <div>{storeDoc?.data()?.storeSymbolAddress}</div>
             </div>
             <div>
@@ -241,13 +242,24 @@ const Store = () => {
               <div>{storeDoc?.data()?.storeDescription}</div>
             </div>
             <div>
-              <h3>店舗画像</h3>
-              <div>{storeDoc?.data()?.storeImageFile}</div>
+              <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
+                <h3>店舗画像</h3>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  component={Link}
+                  to={`/users/${userId}/stores/${storeId}/upload-store-image`}
+                >
+                  画像設定
+                </Button>
+              </Box>
+              <a href={storeDoc?.data()?.storeImageFile}>{storeDoc?.data()?.storeImageFile}</a>
+              <img src={storeDoc?.data()?.storeImageFile} alt={storeDoc?.data()?.storeName} style={{ width: '100%' }} />
             </div>
-            <div>
+            {/* <div>
               <h3>店舗カバー画像</h3>
               <div>{storeDoc?.data()?.storeCoverImageFile}</div>
-            </div>
+            </div> */}
             <Button color="primary" variant="contained" size="large" onClick={handleStoreUpdate}>
               店舗編集
             </Button>

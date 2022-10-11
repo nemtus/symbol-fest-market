@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Container, Stack } from '@mui/material';
+import PublicStores from '../stores';
 
 const Home = () => (
   <Container maxWidth="sm">
@@ -12,6 +13,7 @@ const Home = () => (
         ログインは<Link to="/auth/sign-in/">こちら</Link>
       </div>
     </Stack>
+    <PublicStores />
   </Container>
 );
 

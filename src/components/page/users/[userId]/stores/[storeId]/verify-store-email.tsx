@@ -1,8 +1,4 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Container, Stack, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
@@ -55,10 +51,14 @@ const VerifyStoreEmail = () => {
   const { userId, storeId } = useParams();
   const navigate = useNavigate();
   const [user, loadingUser, errorUser] = useAuthState(auth);
+  const [loadingChallenge, setLoadingChallenge] = useState(false);
   const [error, setError] = useState<Error | undefined>(undefined);
 
   useEffect(() => {
     if (loadingUser) {
+      return;
+    }
+    if (loadingChallenge) {
       return;
     }
     if (!(user && userId && userId === user.uid)) {
@@ -83,6 +83,7 @@ const VerifyStoreEmail = () => {
       storeId,
       storeEmailSecret,
     };
+    setLoadingChallenge(true);
     httpsOnCallChallengeToVerifyStoreEmail(challengeToVerifyStoreEmailRequest)
       .then((res) => {
         if (res.data.storeEmailVerified) {
@@ -91,10 +92,19 @@ const VerifyStoreEmail = () => {
       })
       .catch((err) => {
         setError(err as Error);
+      })
+      .finally(() => {
+        setLoadingChallenge(false);
       });
   };
 
   const handleCancel = () => {
+    if (!userId) {
+      return;
+    }
+    if (!storeId) {
+      return;
+    }
     navigate(`/users/${userId}/stores/${storeId}/`);
   };
 
@@ -120,6 +130,7 @@ const VerifyStoreEmail = () => {
         </Stack>
       </Container>
       <LoadingOverlay open={loadingUser} />
+      <LoadingOverlay open={loadingChallenge} />
       <ErrorDialog open={!!errorUser} error={errorUser} />
       <ErrorDialog open={!!error} error={error} />
     </>

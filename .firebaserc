@@ -1,5 +1,6 @@
 {
   "projects": {
     "default": "symbol-payment-store-test-ym"
-  }
+  },
+  "targets": {}
 }

@@ -4,8 +4,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useDocument } from 'react-firebase-hooks/firestore';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Container, Stack } from '@mui/material';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Box, Button, Container, Stack } from '@mui/material';
 import { useState, useEffect } from 'react';
 import db, { auth, doc, httpsCallable, functions } from '../../../../../../../../configs/firebase';
 import LoadingOverlay from '../../../../../../../ui/LoadingOverlay';
@@ -146,6 +146,25 @@ const Item = () => {
     });
   };
 
+  if (!userId) {
+    return null;
+  }
+  if (!storeId) {
+    return null;
+  }
+  if (!itemId) {
+    return null;
+  }
+  if (!user?.uid) {
+    return null;
+  }
+  if (userId !== user?.uid) {
+    return null;
+  }
+  if (userId !== storeId) {
+    return null;
+  }
+
   return (
     <>
       {itemExists ? (
@@ -177,8 +196,19 @@ const Item = () => {
               <div>{itemDoc?.data()?.itemStatus}</div>
             </div>
             <div>
-              <h3>商品画像</h3>
-              <div>{itemDoc?.data()?.itemImageFile}</div>
+              <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
+                <h3>商品画像</h3>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  component={Link}
+                  to={`/users/${userId}/stores/${storeId}/items/${itemId}/upload-item-image`}
+                >
+                  画像設定
+                </Button>
+              </Box>
+              <a href={itemDoc?.data()?.itemImageFile}>{itemDoc?.data()?.itemImageFile}</a>
+              <img src={itemDoc?.data()?.itemImageFile} alt={itemDoc?.data()?.itemName} style={{ width: '100%' }} />
             </div>
             <Button
               color="primary"

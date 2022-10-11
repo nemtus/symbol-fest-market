@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import * as functions from 'firebase-functions';
 import { db, auth } from '../utils/firebase/admin';
 import { createRandom } from '../utils/random';
@@ -47,18 +46,19 @@ export const userOnCreate = functions
       const storeKycSecret = { storeEmailSecret, storePhoneNumberSecret, storeAddressSecret };
       await storeKycSecretDocRef.set(storeKycSecret, { merge: true });
 
-      await db
-        .collection('mail')
-        .add({
-          to: authUser.email,
-          message: {
-            subject: 'ユーザー登録完了のお知らせ',
-            text: 'ユーザー登録が完了しました。',
-          },
-        })
-        .then(() => {
-          functions.logger.debug('メール送信完了');
-        });
+      // Note: メール送信機能は未実装
+      // await db
+      //   .collection('mail')
+      //   .add({
+      //     to: authUser.email,
+      //     message: {
+      //       subject: 'ユーザー登録完了のお知らせ',
+      //       text: 'ユーザー登録が完了しました。',
+      //     },
+      //   })
+      //   .then(() => {
+      //     functions.logger.debug('メール送信完了');
+      //   });
     } catch (error) {
       functions.logger.warn('itemOnCreate', error);
     }
