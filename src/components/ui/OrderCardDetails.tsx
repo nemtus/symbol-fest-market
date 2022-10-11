@@ -84,6 +84,7 @@ const OrderCardDetail = (orderProps: OrderProps) => {
   const { order } = orderProps;
   const navigate = useNavigate();
   const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const [transactionPayload, setTransactionPayload] = useState<string | undefined>(undefined);
   const [transactionPayloadLoading, setTransactionPayloadLoading] = useState(false);
   const [transactionPayloadError, setTransactionPayloadError] = useState<Error | undefined>(undefined);

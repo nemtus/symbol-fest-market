@@ -4,26 +4,14 @@
     "indexes": "firestore.indexes.json"
   },
   "functions": {
-    "ignore": [
-      "node_modules",
-      ".git",
-      "firebase-debug.log",
-      "firebase-debug.*.log"
-    ],
-    "predeploy": [
-      "npm --prefix ./functions ci",
-      "npm --prefix ./functions run build"
-    ],
+    "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log"],
+    "predeploy": ["npm --prefix ./functions ci", "npm --prefix ./functions run build"],
     "source": "functions"
   },
   "hosting": {
     "predeploy": "npm ci && npm run build",
     "public": "build",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
         "source": "**",
@@ -62,8 +50,5 @@
   },
   "remoteconfig": {
     "template": "remoteconfig.template.json"
-  },
-  "extensions": {
-    "firestore-send-email": "firebase/firestore-send-email@0.1.19"
   }
 }

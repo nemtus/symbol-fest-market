@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import * as functions from 'firebase-functions';
 import { db, auth } from '../../utils/firebase/admin';
 
@@ -47,7 +46,7 @@ export const httpsOnCallChallengeToVerifyStoreAddress = functions
         .collection('kyc')
         .doc('secret');
       const storeKycSecretDoc = await storeKycSecretDocRef.get();
-      const storeAddressSecret = storeKycSecretDoc.data()?.storeAddressSecret;
+      const storeAddressSecret = storeKycSecretDoc.data()?.storeAddressSecret as string;
       if (challengedStoreAddressSecret !== storeAddressSecret) {
         throw new functions.https.HttpsError('unauthenticated', 'Wrong secret');
       }
