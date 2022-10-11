@@ -4,11 +4,15 @@
 import * as functions from 'firebase-functions';
 import WebSocket from 'ws';
 import { db, auth } from '../utils/firebase/admin';
-
-const NODE_DOMAIN = 'symbol-test.next-web-technology.com';
+import {
+  fetchNetworkCurrencyMosaicId,
+  searchConfirmedTransactions,
+  searchUnconfirmedTransactions,
+  selectRandomNode,
+} from '../utils/symbol';
 
 export const orderOnUpdate = functions
-  .runWith({ memory: '128MB', timeoutSeconds: 540 })
+  .runWith({ memory: '128MB', timeoutSeconds: 540, failurePolicy: true })
   .firestore.document('users/{userId}/orders/{orderId}')
   .onUpdate(async (data, context): Promise<void> => {
     functions.logger.debug('orderOnUpdate', data, { structuredData: true });
@@ -56,7 +60,16 @@ export const orderOnUpdate = functions
 
       const orderDocRef = db.collection('users').doc(userId).collection('orders').doc(orderId);
 
-      const ws = new WebSocket(`wss://${NODE_DOMAIN}:3001/ws`);
+      const networkCurrencyMosaicId = await fetchNetworkCurrencyMosaicId();
+      functions.logger.debug('orderOnUpdate', { networkCurrencyMosaicId }, { structuredData: true });
+      if (!networkCurrencyMosaicId) {
+        throw Error('networkCurrencyMosaicId is not defined');
+      }
+
+      const nodeDomain = selectRandomNode();
+      functions.logger.debug('orderOnUpdate', { nodeDomain }, { structuredData: true });
+
+      const ws = new WebSocket(`wss://${nodeDomain}:3001/ws`);
 
       const monitor =
         (data.before.data().orderStatus === 'WAITING_PRICE_INFO' && data.after.data().orderStatus === 'PENDING') ||
@@ -99,12 +112,17 @@ export const orderOnUpdate = functions
           if (res.topic === `unconfirmedAdded/${data.after.data().storeSymbolAddress as string}`) {
             functions.logger.debug('orderOnUpdate', res.data.transaction.mosaics[0], { structuredData: true });
             const xymAmount = res.data.transaction.mosaics[0].amount as string;
+            const xymMosaicId = res.data.transaction.mosaics[0].id as string;
             const orderTotalPriceCC = data.after.data().orderTotalPriceCC as number;
             const txMessageHexString = res.data.transaction.message as string;
             functions.logger.debug(txMessageHexString);
             const txMessage = Buffer.from(txMessageHexString.slice(2), 'hex').toString('utf-8').trim();
             functions.logger.debug(txMessage);
-            if (xymAmount === Math.round(orderTotalPriceCC * 1000000).toString() && orderId === txMessage) {
+            if (
+              xymAmount === Math.round(orderTotalPriceCC * 1000000).toString() &&
+              networkCurrencyMosaicId === xymMosaicId &&
+              orderId === txMessage
+            ) {
               functions.logger.debug('orderOnUpdate', { xymAmount, orderTotalPriceCC }, { structuredData: true });
               const orderTxHash = res.data.meta.hash as string;
               const orderStatus = 'UNCONFIRMED';
@@ -124,12 +142,17 @@ export const orderOnUpdate = functions
 
           if (res.topic === `confirmedAdded/${data.after.data().storeSymbolAddress as string}`) {
             const xymAmount = res.data.transaction.mosaics[0].amount as string;
+            const xymMosaicId = res.data.transaction.mosaics[0].id as string;
             const orderTotalPriceCC = data.after.data().orderTotalPriceCC as number;
             const txMessageHexString = res.data.transaction.message as string;
             functions.logger.debug(txMessageHexString);
             const txMessage = Buffer.from(txMessageHexString.slice(2), 'hex').toString('utf-8').trim();
             functions.logger.debug(txMessage);
-            if (xymAmount === Math.round(orderTotalPriceCC * 1000000).toString() && orderId === txMessage) {
+            if (
+              xymAmount === Math.round(orderTotalPriceCC * 1000000).toString() &&
+              networkCurrencyMosaicId === xymMosaicId &&
+              orderId === txMessage
+            ) {
               functions.logger.debug('orderOnUpdate', { xymAmount, orderTotalPriceCC }, { structuredData: true });
               const orderTxHash = res.data.meta.hash as string;
               const orderStatus = 'CONFIRMED';
@@ -148,7 +171,54 @@ export const orderOnUpdate = functions
           }
         });
       }
+
+      if (
+        data.after.data().orderStatus === 'WAITING_PRICE_INFO' ||
+        data.after.data().orderStatus === 'CONFIRMED' ||
+        data.after.data().orderStatus === 'SENT'
+      ) {
+        return;
+      }
+
+      if (!data.after.data().orderTotalPriceCC) {
+        return;
+      }
+
+      const recipientAddress = data.after.data().storeSymbolAddress as string;
+      const transferMosaicId = networkCurrencyMosaicId;
+      const fromTransferAmount = Math.round((data.after.data().orderTotalPriceCC as number) * 1000000).toString();
+      const toTransferAmount = fromTransferAmount;
+      const message = orderId;
+
+      const unconfirmedTransactions = await searchUnconfirmedTransactions(
+        recipientAddress,
+        transferMosaicId,
+        fromTransferAmount,
+        toTransferAmount,
+        message,
+      );
+      const confirmedTransactions = await searchConfirmedTransactions(
+        recipientAddress,
+        transferMosaicId,
+        fromTransferAmount,
+        toTransferAmount,
+        message,
+      );
+      if (confirmedTransactions.length > 0) {
+        const orderTxHash = confirmedTransactions[0].meta.hash;
+        const orderStatus = 'CONFIRMED';
+        await orderDocRef.set({ orderTxHash, orderStatus }, { merge: true });
+        return;
+      }
+      if (unconfirmedTransactions.length > 0) {
+        const orderTxHash = unconfirmedTransactions[0].meta.hash;
+        const orderStatus = 'UNCONFIRMED';
+        await orderDocRef.set({ orderTxHash, orderStatus }, { merge: true });
+      }
     } catch (error) {
       functions.logger.warn('itemOnUpdate', error);
+      if ((error as Error).message === 'networkCurrencyMosaicId is not defined') {
+        throw error as Error;
+      }
     }
   });

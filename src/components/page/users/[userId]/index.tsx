@@ -10,6 +10,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { useEffect, useState } from 'react';
 import db, { auth, doc, httpsCallable, functions } from '../../../../configs/firebase';
+import { SYMBOL_NETWORK_NAME } from '../../../../configs/symbol';
 import LoadingOverlay from '../../../ui/LoadingOverlay';
 import ErrorDialog from '../../../ui/ErrorDialog';
 
@@ -187,7 +188,7 @@ const User = () => {
             <div>{userDoc?.data()?.address2}</div>
           </div>
           <div>
-            <h3>Symbolアドレス(テストネット)</h3>
+            <h3>{`Symbolアドレス(${SYMBOL_NETWORK_NAME})`}</h3>
             <div style={{ fontSize: 12 }}>
               {userDoc?.data()?.symbolAddress}
               <IconButton

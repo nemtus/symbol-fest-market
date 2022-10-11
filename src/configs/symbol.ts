@@ -2,7 +2,18 @@ import { SymbolFacade } from '@nemtus/symbol-sdk-typescript/esm/facade/SymbolFac
 import { Signature } from '@nemtus/symbol-sdk-typescript/esm/symbol/models';
 import { Configuration, NetworkRoutesApi, NodeRoutesApi } from '@nemtus/symbol-sdk-openapi-generator-typescript-axios';
 
-const NODE_DOMAIN = 'symbol-test.next-web-technology.com';
+export const SYMBOL_NETWORK_NAME = process.env.REACT_APP_SYMBOL_PREFIX === 'N' ? 'メインネット' : 'テストネット';
+export const SYMBOL_PREFIX = process.env.REACT_APP_SYMBOL_PREFIX ?? 'T';
+export const SYMBOL_NODES = process.env.REACT_APP_SYMBOL_NODES ? process.env.REACT_APP_SYMBOL_NODES.split(',') : [];
+export const selectRandomNode = () => {
+  const randomIndex = Math.floor(Math.random() * SYMBOL_NODES.length);
+  return SYMBOL_NODES[randomIndex];
+};
+
+export const SYMBOL_ADDRESS_REG_EXP_TESTNET = /^T[A-Z0-9]{38}$/;
+export const SYMBOL_ADDRESS_REG_EXP_MAINNET = /^T[A-Z0-9]{38}$/;
+export const SYMBOL_ADDRESS_REG_EXP =
+  SYMBOL_PREFIX === 'N' ? SYMBOL_ADDRESS_REG_EXP_MAINNET : SYMBOL_ADDRESS_REG_EXP_TESTNET;
 
 export const createTransactionPayload = async (
   fromAddress: string,
@@ -11,8 +22,9 @@ export const createTransactionPayload = async (
   message: string,
 ): Promise<string | undefined> => {
   // epochAdjustment, networkCurrencyMosaicIdの取得のためNetworkRoutesApi.getNetworkPropertiesを呼び出す
+  const nodeDomain = selectRandomNode();
   const configurationParameters = {
-    basePath: `https://${NODE_DOMAIN}:3001`,
+    basePath: `https://${nodeDomain}:3001`,
   };
   const configuration = new Configuration(configurationParameters);
   const networkRoutesApi = new NetworkRoutesApi(configuration);
@@ -96,8 +108,9 @@ export interface TransactionQrInterface {
 }
 
 export const createTransactionQrData = async (transactionPayload: string): Promise<TransactionQrInterface> => {
+  const nodeDomain = selectRandomNode();
   const configurationParameters = {
-    basePath: `https://${NODE_DOMAIN}:3001`,
+    basePath: `https://${nodeDomain}:3001`,
   };
   const configuration = new Configuration(configurationParameters);
   const nodeRoutesApi = new NodeRoutesApi(configuration);

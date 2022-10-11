@@ -11,6 +11,7 @@ import { Button, Container, Stack, TextField } from '@mui/material';
 import * as yup from 'yup';
 import { useEffect } from 'react';
 import db, { auth, doc, setDoc } from '../../../../../../configs/firebase';
+import { SYMBOL_NETWORK_NAME, SYMBOL_ADDRESS_REG_EXP, SYMBOL_PREFIX } from '../../../../../../configs/symbol';
 import LoadingOverlay from '../../../../../ui/LoadingOverlay';
 import ErrorDialog from '../../../../../ui/ErrorDialog';
 
@@ -48,7 +49,10 @@ const schema = yup.object({
   storeSymbolAddress: yup
     .string()
     .required('必須です')
-    .matches(/^T[A-Z0-9]{38}$/, 'SymbolアドレスはTから始まる39文字の半角大文字英数字で入力してください'),
+    .matches(
+      SYMBOL_ADDRESS_REG_EXP,
+      `Symbolアドレスは${SYMBOL_PREFIX}から始まる39文字の半角大文字英数字で入力してください`,
+    ),
   storeDescription: yup.string().required('必須です'),
 });
 
@@ -187,7 +191,7 @@ const StoreCreate = () => {
           />
           <TextField
             required
-            label="店舗Symbolアドレス(テストネット)"
+            label={`Symbolアドレス(${SYMBOL_NETWORK_NAME})`}
             type="text"
             {...register('storeSymbolAddress')}
             error={'storeSymbolAddress' in errors}

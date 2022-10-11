@@ -9,6 +9,7 @@ import { Box, Button, Container, Stack } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import { useState, useEffect } from 'react';
 import db, { auth, doc, functions, httpsCallable } from '../../../../../../configs/firebase';
+import { SYMBOL_NETWORK_NAME } from '../../../../../../configs/symbol';
 import LoadingOverlay from '../../../../../ui/LoadingOverlay';
 import ErrorDialog from '../../../../../ui/ErrorDialog';
 
@@ -233,7 +234,7 @@ const Store = () => {
               </div>
             </div>
             <div>
-              <h3>店舗Symbolアドレス(テストネット)</h3>
+              <h3>{`店舗Symbolアドレス(${SYMBOL_NETWORK_NAME})`}</h3>
               <div>{storeDoc?.data()?.storeSymbolAddress}</div>
             </div>
             <div>
