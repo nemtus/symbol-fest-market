@@ -15,37 +15,37 @@ export const orderOnUpdate = functions
   .runWith({ memory: '128MB', timeoutSeconds: 540, failurePolicy: true })
   .firestore.document('users/{userId}/orders/{orderId}')
   .onUpdate(async (data, context): Promise<void> => {
-    functions.logger.debug('orderOnUpdate', data, { structuredData: true });
-    functions.logger.debug('orderOnUpdate', context, { structuredData: true });
+    functions.logger.debug('orderOnUpdate', data);
+    functions.logger.debug('orderOnUpdate', context);
     try {
       const userId = context.params.userId as string;
       const orderId = context.params.orderId as string;
       const storeId = data.after.data().storeId as string;
       const itemId = data.after.data().itemId as string;
       if (!userId) {
-        functions.logger.debug('orderOnUpdate', 'userId is not defined', { structuredData: true });
+        functions.logger.debug('orderOnUpdate', 'userId is not defined');
         return;
       }
       if (!orderId) {
-        functions.logger.debug('orderOnUpdate', 'storeId is not defined', { structuredData: true });
+        functions.logger.debug('orderOnUpdate', 'storeId is not defined');
         return;
       }
       if (!storeId) {
-        functions.logger.debug('orderOnUpdate', 'storeId is not defined', { structuredData: true });
+        functions.logger.debug('orderOnUpdate', 'storeId is not defined');
         return;
       }
       if (!itemId) {
-        functions.logger.debug('orderOnUpdate', 'itemId is not defined', { structuredData: true });
+        functions.logger.debug('orderOnUpdate', 'itemId is not defined');
         return;
       }
       const authUser = await auth.getUser(userId);
       if (userId !== authUser.uid) {
-        functions.logger.debug('orderOnUpdate', 'User is not authenticated', { structuredData: true });
+        functions.logger.debug('orderOnUpdate', 'User is not authenticated');
         return;
       }
       const { customClaims } = authUser;
       if (!customClaims?.userKycVerified) {
-        functions.logger.debug('orderOnUpdate', 'kyc is not verified', { structuredData: true });
+        functions.logger.debug('orderOnUpdate', 'kyc is not verified');
         return;
       }
 
@@ -61,13 +61,13 @@ export const orderOnUpdate = functions
       const orderDocRef = db.collection('users').doc(userId).collection('orders').doc(orderId);
 
       const networkCurrencyMosaicId = await fetchNetworkCurrencyMosaicId();
-      functions.logger.debug('orderOnUpdate', { networkCurrencyMosaicId }, { structuredData: true });
+      functions.logger.debug('orderOnUpdate', networkCurrencyMosaicId);
       if (!networkCurrencyMosaicId) {
         throw Error('networkCurrencyMosaicId is not defined');
       }
 
       const nodeDomain = selectRandomNode();
-      functions.logger.debug('orderOnUpdate', { nodeDomain }, { structuredData: true });
+      functions.logger.debug('orderOnUpdate', nodeDomain);
 
       const ws = new WebSocket(`wss://${nodeDomain}:3001/ws`);
 
@@ -77,62 +77,64 @@ export const orderOnUpdate = functions
 
       if (monitor) {
         ws.on('open', () => {
-          functions.logger.debug('orderOnUpdate', 'connection open', { structuredData: true });
+          functions.logger.debug('orderOnUpdate', 'connection open');
         });
 
         ws.on('close', () => {
-          functions.logger.debug('orderOnUpdate', 'connection closed', { structuredData: true });
+          functions.logger.debug('orderOnUpdate', 'connection closed');
         });
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ws.on('message', (msg: any) => {
           const res = JSON.parse(msg);
-          functions.logger.debug('orderOnUpdate', res, { structuredData: true });
+          functions.logger.debug('orderOnUpdate', res);
 
           if ('uid' in res) {
-            functions.logger.debug('orderOnUpdate', { uid: res.uid }, { structuredData: true });
+            functions.logger.debug('orderOnUpdate', { uid: res.uid });
 
             const unconfirmedBody = `{"uid": "${res.uid as string}", "subscribe": "unconfirmedAdded/${
               data.after.data().storeSymbolAddress as string
             }"}`;
-            functions.logger.debug('orderOnUpdate', { unconfirmedBody }, { structuredData: true });
+            functions.logger.debug('orderOnUpdate', unconfirmedBody);
             ws.send(unconfirmedBody);
 
             const confirmedBody = `{"uid": "${res.uid as string}", "subscribe": "confirmedAdded/${
               data.after.data().storeSymbolAddress as string
             }"}`;
-            functions.logger.debug('orderOnUpdate', { confirmedBody }, { structuredData: true });
+            functions.logger.debug('orderOnUpdate', confirmedBody);
             ws.send(confirmedBody);
 
             const blockBody = `{"uid": "${res.uid as string}", "subscribe": "block"}`;
-            functions.logger.debug('orderOnUpdate', blockBody, { structuredData: true });
+            functions.logger.debug('orderOnUpdate', blockBody);
             ws.send(blockBody);
           }
 
           if (res.topic === `unconfirmedAdded/${data.after.data().storeSymbolAddress as string}`) {
-            functions.logger.debug('orderOnUpdate', res.data.transaction.mosaics[0], { structuredData: true });
+            functions.logger.info('orderOnUpdate', res.data.transaction.mosaics[0]);
+            functions.logger.debug('orderOnUpdate', res);
             const xymAmount = res.data.transaction.mosaics[0].amount as string;
             const xymMosaicId = res.data.transaction.mosaics[0].id as string;
             const orderTotalPriceCC = data.after.data().orderTotalPriceCC as number;
             const txMessageHexString = res.data.transaction.message as string;
-            functions.logger.debug(txMessageHexString);
+            functions.logger.debug('orderOnUpdate', txMessageHexString);
             const txMessage = Buffer.from(txMessageHexString.slice(2), 'hex').toString('utf-8').trim();
-            functions.logger.debug(txMessage);
+            functions.logger.debug('orderOnUpdate', txMessage);
             if (
               xymAmount === Math.round(orderTotalPriceCC * 1000000).toString() &&
               networkCurrencyMosaicId === xymMosaicId &&
               orderId === txMessage
             ) {
-              functions.logger.debug('orderOnUpdate', { xymAmount, orderTotalPriceCC }, { structuredData: true });
+              functions.logger.info('orderOnUpdate', 'unconfirmed transaction is found');
+              functions.logger.debug('orderOnUpdate', { xymAmount, orderTotalPriceCC });
               const orderTxHash = res.data.meta.hash as string;
               const orderStatus = 'UNCONFIRMED';
               orderDocRef
                 .set({ orderTxHash, orderStatus }, { merge: true })
                 .then((orderDocRefResponse) => {
-                  functions.logger.debug('orderOnUpdate', orderDocRefResponse, { structuredData: true });
+                  functions.logger.debug('orderOnUpdate', orderDocRefResponse);
                 })
                 .catch((err) => {
-                  functions.logger.debug('orderOnUpdate', err, { structuredData: true });
+                  functions.logger.debug('orderOnUpdate', err);
                 })
                 .finally(() => {
                   ws.close();
@@ -141,19 +143,22 @@ export const orderOnUpdate = functions
           }
 
           if (res.topic === `confirmedAdded/${data.after.data().storeSymbolAddress as string}`) {
+            functions.logger.info('orderOnUpdate', res.data.transaction.mosaics[0]);
+            functions.logger.debug('orderOnUpdate', res);
             const xymAmount = res.data.transaction.mosaics[0].amount as string;
             const xymMosaicId = res.data.transaction.mosaics[0].id as string;
             const orderTotalPriceCC = data.after.data().orderTotalPriceCC as number;
             const txMessageHexString = res.data.transaction.message as string;
-            functions.logger.debug(txMessageHexString);
+            functions.logger.debug('orderOnUpdate', txMessageHexString);
             const txMessage = Buffer.from(txMessageHexString.slice(2), 'hex').toString('utf-8').trim();
-            functions.logger.debug(txMessage);
+            functions.logger.debug('orderOnUpdate', txMessage);
             if (
               xymAmount === Math.round(orderTotalPriceCC * 1000000).toString() &&
               networkCurrencyMosaicId === xymMosaicId &&
               orderId === txMessage
             ) {
-              functions.logger.debug('orderOnUpdate', { xymAmount, orderTotalPriceCC }, { structuredData: true });
+              functions.logger.info('orderOnUpdate', 'confirmed transaction is found');
+              functions.logger.debug('orderOnUpdate', { xymAmount, orderTotalPriceCC });
               const orderTxHash = res.data.meta.hash as string;
               const orderStatus = 'CONFIRMED';
               orderDocRef
@@ -205,12 +210,14 @@ export const orderOnUpdate = functions
         message,
       );
       if (confirmedTransactions.length > 0) {
+        functions.logger.info('orderOnUpdate', 'confirmed transaction is found with REST API');
         const orderTxHash = confirmedTransactions[0].meta.hash;
         const orderStatus = 'CONFIRMED';
         await orderDocRef.set({ orderTxHash, orderStatus }, { merge: true });
         return;
       }
       if (unconfirmedTransactions.length > 0) {
+        functions.logger.info('orderOnUpdate', 'unconfirmed transaction is found with REST API');
         const orderTxHash = unconfirmedTransactions[0].meta.hash;
         const orderStatus = 'UNCONFIRMED';
         await orderDocRef.set({ orderTxHash, orderStatus }, { merge: true });
