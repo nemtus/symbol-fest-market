@@ -1,6 +1,9 @@
 {
   "projects": {
-    "default": "symbol-payment-store-test-ym"
+    "default": "symbol-fest-market",
+    "testnet": "symbol-fest-market-test",
+    "mainnet": "symbol-fest-market"
   },
-  "targets": {}
+  "targets": {},
+  "etags": {}
 }

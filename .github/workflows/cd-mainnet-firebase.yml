@@ -1,0 +1,19 @@
+name: CD Mainnet Firebase
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['16']
+    name: Node ${{ matrix.node }} CD Mainnet Firebase
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci
+      - run: npm run build:mainnet
+      - run: npx --package=firebase-tools firebase deploy --project=mainnet --token=${{ secrets.FIREBASE_TOKEN }} --force

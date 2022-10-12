@@ -1,4 +1,4 @@
-name: CD Firebase
+name: CD Testnet Firebase
 on:
   push:
     branches:
@@ -9,11 +9,13 @@ jobs:
     strategy:
       matrix:
         node: ['16']
-    name: Node ${{ matrix.node }} CD Firebase
+    name: Node ${{ matrix.node }} CD Testnet Firebase
     steps:
       - uses: actions/checkout@v2
       - name: Setup node
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
-      - run: npx --package=firebase-tools firebase deploy  --project=default --token=${{ secrets.FIREBASE_TOKEN }}
+      - run: npm ci
+      - run: npm run build:testnet
+      - run: npx --package=firebase-tools firebase deploy --project=testnet --token=${{ secrets.FIREBASE_TOKEN }} --force

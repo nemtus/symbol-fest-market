@@ -9,7 +9,6 @@
     "source": "functions"
   },
   "hosting": {
-    "predeploy": "npm ci && npm run build",
     "public": "build",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
@@ -46,9 +45,13 @@
     },
     "ui": {
       "enabled": true
+    },
+    "database": {
+      "port": 9000
     }
   },
-  "remoteconfig": {
-    "template": "remoteconfig.template.json"
+  "remoteconfig": {},
+  "database": {
+    "rules": "database.rules.json"
   }
 }
