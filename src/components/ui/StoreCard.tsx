@@ -4,7 +4,7 @@ import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export interface Store {
   storeId: string;
@@ -42,11 +42,15 @@ const StoreCard = (storeProps: StoreProps) => {
     storeImageFile,
     // storeCoverImageFile,
   } = store;
+  const navigate = useNavigate();
+  const handleStoreClick = () => {
+    navigate(`/stores/${storeId}`);
+  };
 
   return (
     <Box maxWidth="sm">
       <Card>
-        <CardMedia component="img" image={storeImageFile} alt={storeName} />
+        <CardMedia component="img" image={storeImageFile} alt={storeName} onClick={handleStoreClick} />
         <CardContent>
           <Typography gutterBottom variant="h5" component="div">
             {storeName}

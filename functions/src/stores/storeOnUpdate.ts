@@ -28,7 +28,6 @@ export const storeOnUpdate = functions
         return;
       }
       const updatedStoreData = data.after.data();
-      delete updatedStoreData.storePhoneNumber;
       await db.collection('stores').doc(data.after.id).set(updatedStoreData, { merge: true });
     } catch (error) {
       functions.logger.warn('storeOnUpdate', error);

@@ -9,7 +9,7 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import SignpostIcon from '@mui/icons-material/Signpost';
 import LinkIcon from '@mui/icons-material/Link';
 import SearchIcon from '@mui/icons-material/Search';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export interface Store {
   storeId: string;
@@ -47,11 +47,15 @@ const StoreCardDetail = (storeProps: StoreProps) => {
     storeImageFile,
     // storeCoverImageFile,
   } = store;
+  const navigate = useNavigate();
+  const handleStoreClick = () => {
+    navigate(`/stores/${storeId}`);
+  };
 
   return (
     <Box maxWidth="sm">
       <Card>
-        <CardMedia component="img" image={storeImageFile} alt={storeName} />
+        <CardMedia component="img" image={storeImageFile} alt={storeName} onClick={handleStoreClick} />
         <CardContent>
           <Typography gutterBottom variant="h5" component="div">
             {storeName}
@@ -74,10 +78,7 @@ const StoreCardDetail = (storeProps: StoreProps) => {
           <div style={{ display: 'flex' }}>
             <SignpostIcon />
             <Typography variant="body2" color="text.third">
-              {`${storeZipCode.slice(0, 3)}-${storeZipCode.slice(
-                0,
-                storeZipCode.length,
-              )} ${storeAddress1} ${storeAddress2}`}
+              {`${storeZipCode.slice(0, 3)}-${storeZipCode.slice(3)} ${storeAddress1} ${storeAddress2}`}
             </Typography>
           </div>
           <div style={{ display: 'flex' }}>

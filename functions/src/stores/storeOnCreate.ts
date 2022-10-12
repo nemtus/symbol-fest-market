@@ -28,7 +28,6 @@ export const storeOnCreate = functions
         return;
       }
       const createdStoreData = data.data();
-      delete createdStoreData.storePhoneNumber;
       await db.collection('stores').doc(data.id).set(createdStoreData, { merge: true });
     } catch (error) {
       functions.logger.warn('storeOnCreate', error);

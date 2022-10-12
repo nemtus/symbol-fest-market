@@ -50,7 +50,7 @@ service cloud.firestore {
 
     // 公開のためのコピー情報
 
-    // 店舗情報 ... 電話番号だけ非公開に加工した上でそれ以外は全て公開
+    // 店舗情報
     match /stores/{storeId} {
       allow get: if true;
       allow list: if true;
