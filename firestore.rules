@@ -21,13 +21,6 @@ service cloud.firestore {
       allow create: if request.auth.token.admin == true || (request.auth.uid == userId && request.auth.uid == storeId);
       allow update: if request.auth.token.admin == true || (request.auth.uid == userId && request.auth.uid == storeId);
     }
-    // 店舗KYCステータス ... 不要と判断
-    // match /users/{userId}/stores/{storeId}/kyc/status {
-    //   allow get: if (request.auth.token.admin == true || (request.auth.uid == userId && request.auth.uid == storeId));
-    //   allow list: if request.auth.token.admin == true;
-    //   allow create: if request.auth.token.admin == true;
-    //   allow update: if request.auth.token.admin == true;
-    // }
     // 店舗KYC秘密情報
     match /users/{userId}/stores/{storeId}/kyc/secret {
       allow get: if request.auth.token.admin == true;
