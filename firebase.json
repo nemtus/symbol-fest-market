@@ -50,8 +50,5 @@
       "port": 9000
     }
   },
-  "remoteconfig": {},
-  "database": {
-    "rules": "database.rules.json"
-  }
+  "remoteconfig": {}
 }
