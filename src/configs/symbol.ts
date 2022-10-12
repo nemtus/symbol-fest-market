@@ -11,7 +11,7 @@ export const selectRandomNode = () => {
 };
 
 export const SYMBOL_ADDRESS_REG_EXP_TESTNET = /^T[A-Z0-9]{38}$/;
-export const SYMBOL_ADDRESS_REG_EXP_MAINNET = /^T[A-Z0-9]{38}$/;
+export const SYMBOL_ADDRESS_REG_EXP_MAINNET = /^N[A-Z0-9]{38}$/;
 export const SYMBOL_ADDRESS_REG_EXP =
   SYMBOL_PREFIX === 'N' ? SYMBOL_ADDRESS_REG_EXP_MAINNET : SYMBOL_ADDRESS_REG_EXP_TESTNET;
 
