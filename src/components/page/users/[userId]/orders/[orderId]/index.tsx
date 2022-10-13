@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { Container } from '@mui/material';
 import OrderCardDetail, { Order } from '../../../../../ui/OrderCardDetails';
 import db, { doc, onSnapshot, auth } from '../../../../../../configs/firebase';
 import LoadingOverlay from '../../../../../ui/LoadingOverlay';
@@ -60,12 +61,12 @@ const OrderForUser = () => {
   }
 
   return (
-    <>
+    <Container maxWidth="sm">
       {orderExists && orderDocData && orderId ? <OrderCardDetail order={orderDocData} key={orderId} /> : null}
       <LoadingOverlay open={orderDocLoading || authUserLoading} />
       <ErrorDialog open={!!orderDocError} error={orderDocError} />
       <ErrorDialog open={!!authUserError} error={authUserError} />
-    </>
+    </Container>
   );
 };
 
