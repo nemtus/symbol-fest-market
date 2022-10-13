@@ -1,6 +1,7 @@
 import { useCollectionData, useDocument } from 'react-firebase-hooks/firestore';
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { Container } from '@mui/material';
 import db, { collection, doc } from '../../../../../configs/firebase';
 import ErrorDialog from '../../../../ui/ErrorDialog';
 import LoadingOverlay from '../../../../ui/LoadingOverlay';
@@ -37,13 +38,15 @@ const PublicItems = () => {
   }, [storeId, storeDocLoading, itemCollectionDataLoading, storeDoc, itemCollectionData, setItemsExist]);
 
   return (
-    <div>
-      <h2>商品一覧</h2>
-      {itemsExist ? <ItemList store={storeDoc?.data() as Store} items={itemCollectionData as Item[]} /> : null}
-      <LoadingOverlay open={storeDocLoading || itemCollectionDataLoading} />
-      <ErrorDialog open={!!storeDocError} error={storeDocError} />
-      <ErrorDialog open={!!itemCollectionDataError} error={itemCollectionDataError} />
-    </div>
+    <Container maxWidth="sm">
+      <div>
+        <h2>商品一覧</h2>
+        {itemsExist ? <ItemList store={storeDoc?.data() as Store} items={itemCollectionData as Item[]} /> : null}
+        <LoadingOverlay open={storeDocLoading || itemCollectionDataLoading} />
+        <ErrorDialog open={!!storeDocError} error={storeDocError} />
+        <ErrorDialog open={!!itemCollectionDataError} error={itemCollectionDataError} />
+      </div>
+    </Container>
   );
 };
 

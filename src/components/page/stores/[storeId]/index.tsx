@@ -1,6 +1,7 @@
 import { useDocument } from 'react-firebase-hooks/firestore';
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { Container } from '@mui/material';
 import db, { doc } from '../../../../configs/firebase';
 import ErrorDialog from '../../../ui/ErrorDialog';
 import LoadingOverlay from '../../../ui/LoadingOverlay';
@@ -23,15 +24,17 @@ const PublicStore = () => {
   }, [storeId, storeDoc, setStoreExists]);
 
   return (
-    <div>
-      <h2>店舗詳細</h2>
-      {storeExists ? (
-        <StoreCardDetail store={storeDoc?.data() as Store} key={(storeDoc?.data() as Store)?.storeId} />
-      ) : null}
-      {storeExists ? <PublicItems /> : null}
-      <LoadingOverlay open={storeDocLoading || !storeExists} />
-      <ErrorDialog open={!!storeDocError} error={storeDocError} />
-    </div>
+    <Container maxWidth="sm">
+      <div>
+        <h2>店舗詳細</h2>
+        {storeExists ? (
+          <StoreCardDetail store={storeDoc?.data() as Store} key={(storeDoc?.data() as Store)?.storeId} />
+        ) : null}
+        {storeExists ? <PublicItems /> : null}
+        <LoadingOverlay open={storeDocLoading || !storeExists} />
+        <ErrorDialog open={!!storeDocError} error={storeDocError} />
+      </div>
+    </Container>
   );
 };
 
