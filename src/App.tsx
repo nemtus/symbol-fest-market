@@ -36,6 +36,7 @@ const PublicStore = loadable(() => import('./components/page/stores/[storeId]'))
 const PublicItems = loadable(() => import('./components/page/stores/[storeId]/items'));
 const PublicItem = loadable(() => import('./components/page/stores/[storeId]/items/[itemId]'));
 const OrderForUser = loadable(() => import('./components/page/users/[userId]/orders/[orderId]'));
+const OrdersForStore = loadable(() => import('./components/page/users/[userId]/stores/[storeId]/orders'));
 
 const App = () => (
   <BrowserRouter>
@@ -63,6 +64,7 @@ const App = () => (
       <Route path="/users/:userId/stores/:storeId/items/:itemId/upload-item-image" element={<UploadItemImage />} />
       <Route path="/users/:userId/stores/:storeId/items/:itemId" element={<Item />} />
       <Route path="/users/:userId/stores/:storeId/items" element={<Items />} />
+      <Route path="/users/:userId/stores/:storeId/orders" element={<OrdersForStore />} />
       <Route path="/users/:userId/orders/create" element={<Store />} />
       <Route path="/users/:userId/orders/:orderId" element={<OrderForUser />} />
       <Route path="/stores/:storeId/items/:itemId" element={<PublicItem />} />

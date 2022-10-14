@@ -15,6 +15,9 @@ export const SYMBOL_ADDRESS_REG_EXP_MAINNET = /^N[A-Z0-9]{38}$/;
 export const SYMBOL_ADDRESS_REG_EXP =
   SYMBOL_PREFIX === 'N' ? SYMBOL_ADDRESS_REG_EXP_MAINNET : SYMBOL_ADDRESS_REG_EXP_TESTNET;
 
+export const SYMBOL_BLOCK_EXPLORER_URL =
+  process.env.REACT_APP_SYMBOL_PREFIX === 'N' ? 'https://symbol.fyi' : 'https://testnet.symbol.fyi';
+
 export const createTransactionPayload = async (
   fromAddress: string,
   toAddress: string,

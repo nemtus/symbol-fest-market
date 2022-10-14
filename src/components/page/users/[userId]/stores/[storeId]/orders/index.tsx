@@ -4,9 +4,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData, useDocument } from 'react-firebase-hooks/firestore';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
-  Button,
   Container,
   Paper,
   Stack,
@@ -20,11 +19,34 @@ import {
 } from '@mui/material';
 import { useState, useEffect } from 'react';
 import db, { auth, collection, doc, httpsCallable, functions } from '../../../../../../../configs/firebase';
+import { SYMBOL_BLOCK_EXPLORER_URL } from '../../../../../../../configs/symbol';
 import LoadingOverlay from '../../../../../../ui/LoadingOverlay';
 import ErrorDialog from '../../../../../../ui/ErrorDialog';
 
 interface Column {
-  id: 'itemId' | 'itemName' | 'itemPrice' | 'itemPriceUnit' | 'itemDescription' | 'itemImageFile' | 'itemStatus';
+  id: // | 'userId'
+  | 'email'
+    | 'name'
+    | 'phoneNumber'
+    | 'zipCode'
+    | 'address1'
+    | 'address2'
+    // | 'symbolAddress'
+    | 'orderId'
+    // | 'orderAmount'
+    | 'orderTotalPrice'
+    | 'orderTotalPriceUnit'
+    | 'orderTotalPriceCC'
+    | 'orderTotalPriceCCUnit'
+    | 'orderTxHash'
+    | 'orderStatus'
+    // | 'itemId'
+    | 'itemName';
+  // | 'itemPrice'
+  // | 'itemPriceUnit'
+  // | 'itemDescription'
+  // | 'itemImageFile'
+  // | 'itemStatus';
   label: string;
   minWidth?: number;
   align?: 'right';
@@ -32,30 +54,94 @@ interface Column {
 }
 
 const columns: Column[] = [
+  // {
+  //   id: 'userId',
+  //   label: 'お客様ID',
+  // },
   {
-    id: 'itemId',
-    label: '商品ID',
+    id: 'email',
+    label: 'お客様メールアドレス',
   },
+  {
+    id: 'name',
+    label: 'お客様名',
+  },
+  {
+    id: 'phoneNumber',
+    label: 'お客様電話番号',
+  },
+  {
+    id: 'zipCode',
+    label: 'お客様郵便番号',
+  },
+  {
+    id: 'address1',
+    label: 'お客様住所1',
+  },
+  {
+    id: 'address2',
+    label: 'お客様住所2',
+  },
+  // {
+  //   id: 'symbolAddress',
+  //   label: 'お客様Symbolアドレス',
+  // },
+  {
+    id: 'orderId',
+    label: '注文ID',
+  },
+  // {
+  //   id: 'orderAmount',
+  //   label: '注文数量',
+  // },
+  {
+    id: 'orderTotalPrice',
+    label: '注文金額',
+  },
+  {
+    id: 'orderTotalPriceUnit',
+    label: '注文通貨',
+  },
+  {
+    id: 'orderTotalPriceCC',
+    label: '注文金額',
+  },
+  {
+    id: 'orderTotalPriceCCUnit',
+    label: '注文通貨',
+  },
+  {
+    id: 'orderTxHash',
+    label: '注文 Tx Hash',
+  },
+  {
+    id: 'orderStatus',
+    label: '注文状態',
+  },
+  // {
+  //   id: 'itemId',
+  //   label: '商品ID',
+  // },
   {
     id: 'itemName',
     label: '商品名',
   },
-  {
-    id: 'itemPrice',
-    label: '価格',
-  },
-  {
-    id: 'itemPriceUnit',
-    label: '単位',
-  },
-  {
-    id: 'itemStatus',
-    label: 'ステータス',
-  },
-  {
-    id: 'itemDescription',
-    label: '商品説明',
-  },
+  // {
+  //   id: 'itemPrice',
+  //   label: '価格',
+  // },
+  // {
+  //   id: 'itemPriceUnit',
+  //   label: '単位',
+  // },
+  // {
+  //   id: 'itemStatus',
+  //   label: 'ステータス',
+  // },
+  // {
+  //   id: 'itemDescription',
+  //   label: '商品説明',
+  // },
 ];
 
 interface VerifyKycRequest {
@@ -74,10 +160,10 @@ interface VerifyKycResponse {
 
 const httpsOnCallVerifyKyc = httpsCallable<VerifyKycRequest, VerifyKycResponse>(functions, 'httpsOnCallVerifyKyc');
 
-const Items = () => {
+const OrdersForStore = () => {
   const navigate = useNavigate();
   const { userId, storeId } = useParams();
-  const [user, loading, error] = useAuthState(auth);
+  const [authUser, authUserLoading, authUserError] = useAuthState(auth);
   const [userDoc, userDocLoading, userDocError] = useDocument(doc(db, 'users', userId ?? ''), {
     snapshotListenOptions: { includeMetadataChanges: true },
   });
@@ -87,8 +173,8 @@ const Items = () => {
       snapshotListenOptions: { includeMetadataChanges: true },
     },
   );
-  const [itemCollectionData, itemCollectionDataLoading, itemCollectionDataError] = useCollectionData(
-    collection(db, 'users', userId ?? '', 'stores', storeId ?? '', 'items'),
+  const [orderCollectionData, orderCollectionDataLoading, orderCollectionDataError] = useCollectionData(
+    collection(db, 'users', userId ?? '', 'stores', storeId ?? '', 'orders'),
     {
       snapshotListenOptions: { includeMetadataChanges: true },
     },
@@ -117,10 +203,10 @@ const Items = () => {
   };
 
   useEffect(() => {
-    if (loading || userDocLoading || storeDocLoading || itemCollectionDataLoading || kycStatusLoading) {
+    if (authUserLoading || userDocLoading || storeDocLoading || orderCollectionDataLoading || kycStatusLoading) {
       return;
     }
-    if (!(user && userId && userId === user.uid)) {
+    if (!(authUser && userId && userId === authUser.uid)) {
       navigate('/auth/sign-in/');
       return;
     }
@@ -149,8 +235,8 @@ const Items = () => {
   }, [
     userId,
     storeId,
-    user,
-    loading,
+    authUser,
+    authUserLoading,
     navigate,
     userDoc,
     storeDoc,
@@ -158,37 +244,17 @@ const Items = () => {
     setKycStatusLoading,
     setKycStatus,
     setKycStatusError,
-    itemCollectionDataLoading,
+    orderCollectionDataLoading,
     kycStatusLoading,
     storeDocLoading,
     userDocLoading,
   ]);
 
-  const handleStoreCreate = () => {
-    if (!userId) {
-      throw Error('Invalid userId');
-    }
-    if (!storeId) {
-      throw Error('Invalid storeId');
-    }
-    navigate(`/users/${userId}/stores/${storeId}/create`);
-  };
-
-  const handleItemCreate = () => {
-    if (!userId) {
-      throw Error('Invalid userId');
-    }
-    if (!storeId) {
-      throw Error('Invalid storeId');
-    }
-    navigate(`/users/${userId}/stores/${storeId}/items/create`);
-  };
-
   return (
     <>
-      {storeExists ? (
+      {storeExists && kycStatus ? (
         <Container>
-          <h2>商品情報</h2>
+          <h2>注文情報</h2>
           <Paper sx={{ width: '100%', overflow: 'hidden' }}>
             <TableContainer>
               <Table stickyHeader aria-label="sticky table">
@@ -203,16 +269,16 @@ const Items = () => {
                 </TableHead>
                 <TableBody>
                   {(rowsPerPage > 0
-                    ? itemCollectionData?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    : itemCollectionData
+                    ? orderCollectionData?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    : orderCollectionData
                   )?.map((document) => (
                     <TableRow hover role="checkbox" tabIndex={-1} key={document.itemId}>
                       {columns.map((column) => {
                         const value = document[column.id];
-                        if (column.id === 'itemId' && userId && storeId) {
+                        if (column.id === 'orderTxHash' && typeof value === 'string') {
                           return (
                             <TableCell key={column.id} align={column.align} sx={{ wordBreak: 'break-all' }}>
-                              <Link to={`/users/${userId}/stores/${storeId}/items/${value as string}`}>{value}</Link>
+                              <a href={`${SYMBOL_BLOCK_EXPLORER_URL}/transactions/${value}`}>{value}</a>
                             </TableCell>
                           );
                         }
@@ -230,47 +296,35 @@ const Items = () => {
             <TablePagination
               rowsPerPageOptions={[10, 25, 100, { label: 'All', value: -1 }]}
               component="div"
-              count={itemCollectionData ? itemCollectionData.length : 0}
+              count={orderCollectionData ? orderCollectionData.length : 0}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
             />
           </Paper>
-          <Button
-            color="primary"
-            variant="contained"
-            size="large"
-            onClick={handleItemCreate}
-            disabled={!(kycStatus.storeKycVerified && kycStatus.userKycVerified)}
-          >
-            + 商品追加
-          </Button>
         </Container>
       ) : (
         <Container maxWidth="sm">
-          <h2>商品情報</h2>
+          <h2>注文情報</h2>
           <Stack spacing="3">
             <div>
-              <h3>店舗情報無し</h3>
-              <div>出店及び商品登録を希望する場合は、まずは以下から店舗情報をご登録ください</div>
+              <h3>注文情報無し</h3>
+              <div>お客様からの注文はまだ無いようです。</div>
             </div>
-            <Button color="primary" variant="contained" size="large" onClick={handleStoreCreate}>
-              店舗登録
-            </Button>
           </Stack>
         </Container>
       )}
       <LoadingOverlay
-        open={loading || userDocLoading || storeDocLoading || itemCollectionDataLoading || kycStatusLoading}
+        open={authUserLoading || userDocLoading || storeDocLoading || orderCollectionDataLoading || kycStatusLoading}
       />
-      <ErrorDialog open={!!error} error={error} />
+      <ErrorDialog open={!!authUserError} error={authUserError} />
       <ErrorDialog open={!!userDocError} error={userDocError} />
       <ErrorDialog open={!!storeDocError} error={storeDocError} />
-      <ErrorDialog open={!!itemCollectionDataError} error={itemCollectionDataError} />
+      <ErrorDialog open={!!orderCollectionDataError} error={orderCollectionDataError} />
       <ErrorDialog open={!!kycStatusError} error={kycStatusError} />
     </>
   );
 };
 
-export default Items;
+export default OrdersForStore;

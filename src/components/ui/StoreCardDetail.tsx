@@ -10,6 +10,7 @@ import SignpostIcon from '@mui/icons-material/Signpost';
 import LinkIcon from '@mui/icons-material/Link';
 import SearchIcon from '@mui/icons-material/Search';
 import { Link, useNavigate } from 'react-router-dom';
+import { SYMBOL_BLOCK_EXPLORER_URL } from '../../configs/symbol';
 
 export interface Store {
   storeId: string;
@@ -87,7 +88,7 @@ const StoreCardDetail = (storeProps: StoreProps) => {
           </div>
           <div style={{ display: 'flex' }}>
             <SearchIcon />
-            <a href={`https://testnet.symbol.fyi/accounts/${storeSymbolAddress}`}>{storeSymbolAddress}</a>
+            <a href={`${SYMBOL_BLOCK_EXPLORER_URL}/accounts/${storeSymbolAddress}`}>{storeSymbolAddress}</a>
           </div>
         </CardContent>
         <CardActions>

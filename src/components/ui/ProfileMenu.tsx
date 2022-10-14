@@ -13,6 +13,7 @@ import LockResetIcon from '@mui/icons-material/LockReset';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
 import StorefrontIcon from '@mui/icons-material/Storefront';
+import ViewListIcon from '@mui/icons-material/ViewList';
 import React, { useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, signOut } from '../../configs/firebase';
@@ -48,6 +49,14 @@ const ProfileMenu = () => {
       throw Error('Invalid userId');
     }
     navigate(`/users/${user?.uid}/stores/${user?.uid}/items`);
+  };
+
+  const handleOrdersForStore = () => {
+    handleClose();
+    if (!user?.uid) {
+      throw Error('Invalid userId');
+    }
+    navigate(`/users/${user?.uid}/stores/${user?.uid}/orders`);
   };
 
   const handlePasswordUpdate = () => {
@@ -116,6 +125,12 @@ const ProfileMenu = () => {
               <CardGiftcardIcon />
             </ListItemIcon>
             <ListItemText>商品情報</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={handleOrdersForStore}>
+            <ListItemIcon>
+              <ViewListIcon />
+            </ListItemIcon>
+            <ListItemText>注文情報</ListItemText>
           </MenuItem>
           <MenuItem onClick={handlePasswordUpdate}>
             <ListItemIcon>
