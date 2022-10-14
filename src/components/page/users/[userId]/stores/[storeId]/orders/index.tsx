@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import { useState, useEffect } from 'react';
 import db, { auth, collection, doc, httpsCallable, functions } from '../../../../../../../configs/firebase';
+import { SYMBOL_BLOCK_EXPLORER_URL } from '../../../../../../../configs/symbol';
 import LoadingOverlay from '../../../../../../ui/LoadingOverlay';
 import ErrorDialog from '../../../../../../ui/ErrorDialog';
 
@@ -274,6 +275,13 @@ const OrdersForStore = () => {
                     <TableRow hover role="checkbox" tabIndex={-1} key={document.itemId}>
                       {columns.map((column) => {
                         const value = document[column.id];
+                        if (column.id === 'orderTxHash' && typeof value === 'string') {
+                          return (
+                            <TableCell key={column.id} align={column.align} sx={{ wordBreak: 'break-all' }}>
+                              <a href={`${SYMBOL_BLOCK_EXPLORER_URL}/transactions/${value}`}>{value}</a>
+                            </TableCell>
+                          );
+                        }
                         return (
                           <TableCell key={column.id} align={column.align} sx={{ wordBreak: 'break-all' }}>
                             {column.format && typeof value === 'number' ? column.format(value) : value}
