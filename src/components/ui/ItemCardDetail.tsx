@@ -14,6 +14,7 @@ import { ItemProps } from './ItemCard';
 import { Order, User } from './OrderCardDetails';
 import db, { auth, collection, addDoc, doc, getDoc } from '../../configs/firebase';
 import LoadingOverlay from './LoadingOverlay';
+import ConfirmationDialog, { ConfirmationDialogProps } from './ConfirmationDialog';
 import ErrorDialog from './ErrorDialog';
 
 const ItemCardDetail = (itemProps: ItemProps) => {
@@ -40,6 +41,8 @@ const ItemCardDetail = (itemProps: ItemProps) => {
   const [user, setUser] = useState<User | undefined>(undefined);
   const [purchaseLoading, setPurchaseLoading] = useState(false);
   const [purchaseError, setPurchaseError] = useState<Error | undefined>(undefined);
+  const [confirmationDialogState, setConfirmationDialogState] = useState<ConfirmationDialogProps | undefined>();
+  const [confirmationError, setConfirmationError] = useState<Error | undefined>(undefined);
 
   useEffect(() => {
     if (!authUser) {
@@ -94,24 +97,41 @@ const ItemCardDetail = (itemProps: ItemProps) => {
       );
       return;
     }
-    const orderAmount = 1;
-    const order: Order = {
-      ...user,
-      ...store,
-      ...item,
-      orderAmount,
-    };
-    const orderCollection = collection(db, `/users/${authUser.uid}/orders`);
-    setPurchaseLoading(true);
-    addDoc(orderCollection, order)
-      .then((orderDocRef) => {
-        navigate(`/users/${user.userId}/orders/${orderDocRef.id}`);
+    new Promise<string>((resolve) => {
+      setConfirmationDialogState({
+        title: '購入確認',
+        message: 'この商品を購入しますか？OKを推すと購入先店舗に商品発送先情報が共有されSymbol決済のページに進みます。',
+        onClose: resolve,
+      });
+    })
+      .then((confirmationResult) => {
+        setConfirmationDialogState(undefined);
+        if (confirmationResult !== 'ok') {
+          throw Error('購入をキャンセルしました');
+        }
+        const orderAmount = 1;
+        const order: Order = {
+          ...user,
+          ...store,
+          ...item,
+          orderAmount,
+        };
+        const orderCollection = collection(db, `/users/${authUser.uid}/orders`);
+        setPurchaseLoading(true);
+        addDoc(orderCollection, order)
+          .then((orderDocRef) => {
+            navigate(`/users/${user.userId}/orders/${orderDocRef.id}`);
+          })
+          .catch((err) => {
+            setPurchaseError(err as Error);
+          })
+          .finally(() => {
+            setPurchaseLoading(false);
+          });
       })
-      .catch((err) => {
-        setPurchaseError(err as Error);
-      })
-      .finally(() => {
-        setPurchaseLoading(false);
+      .catch((error) => {
+        setConfirmationDialogState(undefined);
+        setConfirmationError(error as Error);
       });
   };
 
@@ -153,9 +173,11 @@ const ItemCardDetail = (itemProps: ItemProps) => {
         </Card>
       </Box>
       <LoadingOverlay open={authUserLoading || userDocLoading || purchaseLoading} />
+      {confirmationDialogState ? <ConfirmationDialog {...confirmationDialogState} /> : null}
       <ErrorDialog open={!!authUserError} error={authUserError} />
       <ErrorDialog open={!!userDocError} error={userDocError} />
       <ErrorDialog open={!!purchaseError} error={purchaseError} />
+      <ErrorDialog open={!!confirmationError} error={confirmationError} />
     </>
   );
 };
