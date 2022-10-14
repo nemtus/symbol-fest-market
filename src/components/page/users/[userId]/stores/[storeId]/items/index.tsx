@@ -184,25 +184,10 @@ const Items = () => {
     navigate(`/users/${userId}/stores/${storeId}/items/create`);
   };
 
-  // const handleItemUpdate = (itemData: Item) => {
-  //   if (!userId) {
-  //     throw Error('Invalid userId');
-  //   }
-  //   if (!storeId) {
-  //     throw Error('Invalid storeId');
-  //   }
-  //   if (!itemData.itemId) {
-  //     throw Error('Invalid itemId');
-  //   }
-  //   navigate(`/users/${userId}/stores/${storeId}/items/${itemData.itemId}/update`, {
-  //     state: itemData,
-  //   });
-  // };
-
   return (
     <>
       {storeExists ? (
-        <Container maxWidth="sm">
+        <Container>
           <h2>商品情報</h2>
           <Paper sx={{ width: '100%', overflow: 'hidden' }}>
             <TableContainer>
@@ -226,13 +211,13 @@ const Items = () => {
                         const value = document[column.id];
                         if (column.id === 'itemId' && userId && storeId) {
                           return (
-                            <TableCell key={column.id} align={column.align}>
+                            <TableCell key={column.id} align={column.align} sx={{ wordBreak: 'break-all' }}>
                               <Link to={`/users/${userId}/stores/${storeId}/items/${value as string}`}>{value}</Link>
                             </TableCell>
                           );
                         }
                         return (
-                          <TableCell key={column.id} align={column.align}>
+                          <TableCell key={column.id} align={column.align} sx={{ wordBreak: 'break-all' }}>
                             {column.format && typeof value === 'number' ? column.format(value) : value}
                           </TableCell>
                         );

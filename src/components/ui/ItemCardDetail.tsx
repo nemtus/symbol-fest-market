@@ -100,7 +100,7 @@ const ItemCardDetail = (itemProps: ItemProps) => {
     new Promise<string>((resolve) => {
       setConfirmationDialogState({
         title: '購入確認',
-        message: 'この商品を購入しますか？OKを推すと購入先店舗に商品発送先情報が共有されSymbol決済のページに進みます。',
+        message: 'この商品を購入しますか？OKすると購入先店舗に商品発送先情報が共有されSymbol決済のページに進みます。',
         onClose: resolve,
       });
     })
