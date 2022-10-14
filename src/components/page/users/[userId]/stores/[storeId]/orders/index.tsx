@@ -251,7 +251,7 @@ const OrdersForStore = () => {
 
   return (
     <>
-      {storeExists ? (
+      {storeExists && kycStatus ? (
         <Container>
           <h2>注文情報</h2>
           <Paper sx={{ width: '100%', overflow: 'hidden' }}>
