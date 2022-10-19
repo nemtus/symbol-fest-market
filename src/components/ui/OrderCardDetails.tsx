@@ -326,7 +326,7 @@ const OrderCardDetail = (orderProps: OrderProps) => {
                 </CardContent>
                 <CardActions>
                   <Button size="large" disabled={!order.storeId || !order.itemId} onClick={handleItemClick}>
-                    購入
+                    商品詳細
                   </Button>
                 </CardActions>
               </Card>
