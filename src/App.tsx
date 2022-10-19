@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import loadable from '@loadable/component';
 import AppHeader from './components/ui/AppHeader';
 import AppFooter from './components/ui/AppFooter';
+import PublicItem from './components/page/stores/[storeId]/items/[itemId]';
 
 const Home = loadable(() => import('./components/page/home'));
 const SignUp = loadable(() => import('./components/page/auth/sign-up'));
@@ -34,8 +35,8 @@ const Item = loadable(() => import('./components/page/users/[userId]/stores/[sto
 const PublicStores = loadable(() => import('./components/page/stores'));
 const PublicStore = loadable(() => import('./components/page/stores/[storeId]'));
 const PublicItems = loadable(() => import('./components/page/stores/[storeId]/items'));
-const PublicItem = loadable(() => import('./components/page/stores/[storeId]/items/[itemId]'));
 const OrderForUser = loadable(() => import('./components/page/users/[userId]/orders/[orderId]'));
+const OrdersForUser = loadable(() => import('./components/page/users/[userId]/orders'));
 const OrdersForStore = loadable(() => import('./components/page/users/[userId]/stores/[storeId]/orders'));
 
 const App = () => (
@@ -67,6 +68,7 @@ const App = () => (
       <Route path="/users/:userId/stores/:storeId/orders" element={<OrdersForStore />} />
       <Route path="/users/:userId/orders/create" element={<Store />} />
       <Route path="/users/:userId/orders/:orderId" element={<OrderForUser />} />
+      <Route path="/users/:userId/orders" element={<OrdersForUser />} />
       <Route path="/stores/:storeId/items/:itemId" element={<PublicItem />} />
       <Route path="/stores/:storeId/items" element={<PublicItems />} />
       <Route path="/stores/:storeId" element={<PublicStore />} />
