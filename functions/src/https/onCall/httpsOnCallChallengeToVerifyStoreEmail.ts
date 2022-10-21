@@ -66,6 +66,27 @@ export const httpsOnCallChallengeToVerifyStoreEmail = functions
         storeKycVerified,
       };
       await auth.setCustomUserClaims(userId, kycStatus);
+
+      // Note: storeKycがOKで、店舗情報が存在するが、店舗情報未公開だった場合、店舗情報を公開する
+      if (storeKycVerified) {
+        const storeForUserDocRef = db.collection('users').doc(userId).collection('stores').doc(storeId);
+        const storeForUserDoc = await storeForUserDocRef.get();
+        const storeForUser = storeForUserDoc.data();
+
+        const storeDocRef = db.collection('stores').doc(storeId);
+        const storeDoc = await storeDocRef.get();
+        const store = storeDoc.data();
+
+        if (!store?.storeId && storeForUser) {
+          functions.logger.info(
+            'httpsOnCallChallengeToVerifyStoreEmail',
+            "storeKyc is verified, but store isn't published",
+            { structuredData: true },
+          );
+          await storeDocRef.create(storeForUser);
+        }
+      }
+
       return { storeEmailVerified };
     } catch (error) {
       functions.logger.warn('httpsOnCallChallengeToVerifyStoreEmail', error);
