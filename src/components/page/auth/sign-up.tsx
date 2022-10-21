@@ -5,12 +5,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Container, Stack, TextField } from '@mui/material';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { useCreateUserWithEmailAndPassword } from 'react-firebase-hooks/auth';
-import { auth } from '../../../configs/firebase';
+import { useDocument } from 'react-firebase-hooks/firestore';
+import db, { auth, doc } from '../../../configs/firebase';
 import LoadingOverlay from '../../ui/LoadingOverlay';
 import ErrorDialog from '../../ui/ErrorDialog';
 
@@ -48,6 +49,10 @@ const SignUp = () => {
   const [createUserWithEmailAndPassword, userCredential, loading, error] = useCreateUserWithEmailAndPassword(auth, {
     sendEmailVerification: true,
   });
+  const [configDoc, configDocLoading, configDocError] = useDocument(doc(db, 'configs/1'), {
+    snapshotListenOptions: { includeMetadataChanges: true },
+  });
+  const [submitError, setSubmitError] = useState<Error | undefined>(undefined);
 
   useEffect(() => {
     if (!userCredential) {
@@ -63,6 +68,10 @@ const SignUp = () => {
   });
 
   const onSubmit: SubmitHandler<SignUpFormInput> = async (data) => {
+    if (!configDoc?.data()?.enableCreateUser) {
+      setSubmitError(Error('ユーザー登録を受け付けていません。'));
+      return;
+    }
     await createUserWithEmailAndPassword(data.email, data.password);
   };
 
@@ -98,8 +107,10 @@ const SignUp = () => {
           </div>
         </Stack>
       </Container>
-      <LoadingOverlay open={loading} />
+      <LoadingOverlay open={loading || configDocLoading} />
       <ErrorDialog open={!!error} error={error} />
+      <ErrorDialog open={!!configDocError} error={configDocError} />
+      <ErrorDialog open={!!submitError} error={submitError} />
     </>
   );
 };

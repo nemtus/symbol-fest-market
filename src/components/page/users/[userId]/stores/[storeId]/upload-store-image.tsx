@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@mui/material';
+import { useDocument } from 'react-firebase-hooks/firestore';
 import db, { storage, ref, uploadBytes, getDownloadURL, doc, setDoc } from '../../../../../../configs/firebase';
 import LoadingOverlay from '../../../../../ui/LoadingOverlay';
 import ErrorDialog from '../../../../../ui/ErrorDialog';
@@ -12,8 +13,15 @@ const UploadStoreImage = () => {
   const [storageUploading, setStorageUploading] = useState<boolean>(false);
   const [setDocLoading, setSetDocLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | undefined>(undefined);
+  const [configDoc, configDocLoading, configDocError] = useDocument(doc(db, 'configs/1'), {
+    snapshotListenOptions: { includeMetadataChanges: true },
+  });
 
   const onChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!configDoc?.data()?.enableCreateStore) {
+      setError(Error('現在、店舗登録を受け付けていません。'));
+      return;
+    }
     const { files } = e.target;
     if (!files?.length) {
       return;
@@ -57,8 +65,9 @@ const UploadStoreImage = () => {
           アップロード
         </Button>
       </label>
-      <LoadingOverlay open={storageUploading || setDocLoading} />
+      <LoadingOverlay open={storageUploading || setDocLoading || configDocLoading} />
       <ErrorDialog open={!!error} error={error} />
+      <ErrorDialog open={!!configDocError} error={configDocError} />
     </>
   );
 };

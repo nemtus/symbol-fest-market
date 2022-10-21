@@ -9,7 +9,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { Button, Container, Stack, TextField } from '@mui/material';
 import * as yup from 'yup';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import db, { auth, doc, setDoc } from '../../../../configs/firebase';
 import { SYMBOL_NETWORK_NAME, SYMBOL_ADDRESS_REG_EXP, SYMBOL_PREFIX } from '../../../../configs/symbol';
 import LoadingOverlay from '../../../ui/LoadingOverlay';
@@ -56,6 +56,10 @@ const UserUpdate = () => {
   const [userDoc, userDocLoading, userDocError] = useDocument(doc(db, 'users', userId || ''), {
     snapshotListenOptions: { includeMetadataChanges: true },
   });
+  const [configDoc, configDocLoading, configDocError] = useDocument(doc(db, 'configs/1'), {
+    snapshotListenOptions: { includeMetadataChanges: true },
+  });
+  const [submitError, setSubmitError] = useState<Error | undefined>(undefined);
 
   const currentUserFormInput: UserUpdateFormInput = {
     name: location.state.name ?? '',
@@ -79,6 +83,10 @@ const UserUpdate = () => {
   });
 
   const onSubmit: SubmitHandler<UserUpdateFormInput> = async (data) => {
+    if (!configDoc?.data()?.enableCreateStore) {
+      setSubmitError(Error('現在、ユーザー登録を受け付けていません。'));
+      return;
+    }
     if (!userId) {
       throw Error('Invalid userId');
     }
@@ -180,9 +188,11 @@ const UserUpdate = () => {
           </Button>
         </Stack>
       </Container>
-      <LoadingOverlay open={loading || userDocLoading} />
+      <LoadingOverlay open={loading || userDocLoading || configDocLoading} />
       <ErrorDialog open={!!error} error={error} />
       <ErrorDialog open={!!userDocError} error={userDocError} />
+      <ErrorDialog open={!!configDocError} error={configDocError} />
+      <ErrorDialog open={!!submitError} error={submitError} />
     </>
   );
 };
