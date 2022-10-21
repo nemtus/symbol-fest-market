@@ -80,6 +80,10 @@ const ItemUpdate = () => {
   });
   const [kycStatusLoading, setKycStatusLoading] = useState(false);
   const [kycStatusError, setKycStatusError] = useState<Error | undefined>(undefined);
+  const [configDoc, configDocLoading, configDocError] = useDocument(doc(db, 'configs/1'), {
+    snapshotListenOptions: { includeMetadataChanges: true },
+  });
+  const [submitError, setSubmitError] = useState<Error | undefined>(undefined);
 
   const currentItemFormInput: ItemUpdateFormInput = {
     itemName: location.state.itemName ?? '',
@@ -104,37 +108,51 @@ const ItemUpdate = () => {
   });
 
   const onSubmit: SubmitHandler<ItemUpdateFormInput> = async (data) => {
+    if (!configDoc?.data()?.enableCreateItem) {
+      setSubmitError(Error('現在、商品登録を受け付けていません。'));
+      return;
+    }
+
     if (!userId) {
-      throw Error('Invalid userId');
+      setSubmitError(Error('Invalid userId'));
+      return;
     }
     if (userId !== user?.uid) {
-      throw Error('userId is not match with user.uid');
+      setSubmitError(Error('userId is not match with user.uid'));
+      return;
     }
     if (!user?.email) {
-      throw Error('Invalid email');
+      setSubmitError(Error('Invalid email'));
+      return;
     }
     const userDocRef = userDoc?.ref;
     if (!userDocRef) {
-      throw Error("Can't get user document reference");
+      setSubmitError(Error("Can't get user document reference"));
+      return;
     }
 
     if (!storeId) {
-      throw Error('Invalid storeId');
+      setSubmitError(Error('Invalid storeId'));
+      return;
     }
     if (storeId !== userId) {
-      throw Error('storeId is not match with userId');
+      setSubmitError(Error('storeId is not match with userId'));
+      return;
     }
     const storeDocRef = storeDoc?.ref;
     if (!storeDocRef) {
-      throw Error("Can't get store document reference");
+      setSubmitError(Error("Can't get store document reference"));
+      return;
     }
 
     if (!itemId) {
-      throw Error('Invalid itemId');
+      setSubmitError(Error('Invalid itemId'));
+      return;
     }
     const itemDocRef = itemDoc?.ref;
     if (!itemDocRef) {
-      throw Error("Can't get item document reference");
+      setSubmitError(Error("Can't get item document reference"));
+      return;
     }
 
     await setDoc(itemDocRef, { itemId, ...data }, { merge: true });
@@ -142,7 +160,7 @@ const ItemUpdate = () => {
   };
 
   useEffect(() => {
-    if (loading || userDocLoading || storeDocLoading || itemDocLoading) {
+    if (loading || userDocLoading || storeDocLoading || itemDocLoading || configDocLoading) {
       return;
     }
     if (!(user && userId && userId === user.uid)) {
@@ -178,6 +196,7 @@ const ItemUpdate = () => {
     userDocLoading,
     storeDocLoading,
     itemDocLoading,
+    configDocLoading,
     navigate,
     setKycStatus,
     setKycStatusError,
@@ -257,12 +276,16 @@ const ItemUpdate = () => {
           </Button>
         </Stack>
       </Container>
-      <LoadingOverlay open={loading || userDocLoading || storeDocLoading || itemDocLoading || kycStatusLoading} />
+      <LoadingOverlay
+        open={loading || userDocLoading || storeDocLoading || itemDocLoading || kycStatusLoading || configDocLoading}
+      />
       <ErrorDialog open={!!error} error={error} />
       <ErrorDialog open={!!userDocError} error={userDocError} />
       <ErrorDialog open={!!storeDocError} error={storeDocError} />
       <ErrorDialog open={!!itemDocError} error={itemDocError} />
       <ErrorDialog open={!!kycStatusError} error={kycStatusError} />
+      <ErrorDialog open={!!configDocError} error={configDocError} />
+      <ErrorDialog open={!!submitError} error={submitError} />
     </>
   );
 };

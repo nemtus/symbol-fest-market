@@ -79,6 +79,10 @@ const UserCreate = () => {
     storeAddressVerified: false,
     storeKycVerified: false,
   });
+  const [configDoc, configDocLoading, configDocError] = useDocument(doc(db, 'configs/1'), {
+    snapshotListenOptions: { includeMetadataChanges: true },
+  });
+  const [submitError, setSubmitError] = useState<Error | undefined>(undefined);
 
   const {
     register,
@@ -92,18 +96,26 @@ const UserCreate = () => {
   });
 
   const onSubmit: SubmitHandler<UserCreateFormInput> = async (data) => {
+    if (!configDoc?.data()?.enableCreateUser) {
+      setSubmitError(Error('現在、ユーザー登録を受け付けていません。'));
+      return;
+    }
     if (!userId) {
-      throw Error('Invalid userId');
+      setSubmitError(Error('Invalid userId'));
+      return;
     }
     if (userId !== user?.uid) {
-      throw Error('userId is not match with user.uid');
+      setSubmitError(Error('userId is not match with user.uid'));
+      return;
     }
     if (!user?.email) {
-      throw Error('Invalid email');
+      setSubmitError(Error('Invalid email'));
+      return;
     }
     const userDocRef = userDoc?.ref;
     if (!userDocRef) {
-      throw Error("Can't get user document reference");
+      setSubmitError(Error("Can't get user document reference"));
+      return;
     }
     await setDoc(userDocRef, { userId, email: user.email, ...data }, { merge: true });
     navigate(`/users/${userId}`);
@@ -188,9 +200,11 @@ const UserCreate = () => {
           </Button>
         </Stack>
       </Container>
-      <LoadingOverlay open={loading || userDocLoading} />
+      <LoadingOverlay open={loading || userDocLoading || configDocLoading} />
       <ErrorDialog open={!!error} error={error} />
       <ErrorDialog open={!!userDocError} error={userDocError} />
+      <ErrorDialog open={!!configDocError} error={configDocError} />
+      <ErrorDialog open={!!submitError} error={submitError} />
     </>
   );
 };

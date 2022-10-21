@@ -47,6 +47,11 @@ service cloud.firestore {
       allow get: if true;
       allow list: if true;
     }
+    // 設定情報
+    match /configs/{configId} {
+      allow get: if true;
+      allow list: if true;
+    }
 
     // 公開のためのコピー情報
 

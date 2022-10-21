@@ -9,7 +9,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { Button, Container, Stack, TextField } from '@mui/material';
 import * as yup from 'yup';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import db, { auth, doc, setDoc } from '../../../../../../configs/firebase';
 import { SYMBOL_NETWORK_NAME, SYMBOL_ADDRESS_REG_EXP, SYMBOL_PREFIX } from '../../../../../../configs/symbol';
 import LoadingOverlay from '../../../../../ui/LoadingOverlay';
@@ -70,6 +70,10 @@ const StoreUpdate = () => {
       snapshotListenOptions: { includeMetadataChanges: true },
     },
   );
+  const [configDoc, configDocLoading, configDocError] = useDocument(doc(db, 'configs/1'), {
+    snapshotListenOptions: { includeMetadataChanges: true },
+  });
+  const [submitError, setSubmitError] = useState<Error | undefined>(undefined);
 
   const currentStoreFormInput: StoreUpdateFormInput = {
     storeName: location.state.storeName ?? '',
@@ -98,29 +102,41 @@ const StoreUpdate = () => {
   });
 
   const onSubmit: SubmitHandler<StoreUpdateFormInput> = async (data) => {
+    if (!configDoc?.data()?.enableCreateStore) {
+      setSubmitError(Error('現在、店舗登録を受け付けていません。'));
+      return;
+    }
+
     if (!userId) {
-      throw Error('Invalid userId');
+      setSubmitError(Error('Invalid userId'));
+      return;
     }
     if (userId !== user?.uid) {
-      throw Error('userId is not match with user.uid');
+      setSubmitError(Error('userId is not match with user.uid'));
+      return;
     }
     if (!user?.email) {
-      throw Error('Invalid email');
+      setSubmitError(Error('Invalid email'));
+      return;
     }
     const userDocRef = userDoc?.ref;
     if (!userDocRef) {
-      throw Error("Can't get user document reference");
+      setSubmitError(Error("Can't get user document reference"));
+      return;
     }
 
     if (!storeId) {
-      throw Error('Invalid userId');
+      setSubmitError(Error('Invalid userId'));
+      return;
     }
     if (storeId !== userId) {
-      throw Error('storeId is not match with userId');
+      setSubmitError(Error('storeId is not match with userId'));
+      return;
     }
     const storeDocRef = storeDoc?.ref;
     if (!storeDocRef) {
-      throw Error("Can't get user document reference");
+      setSubmitError(Error("Can't get user document reference"));
+      return;
     }
 
     await setDoc(storeDocRef, { storeId, ...data }, { merge: true });
@@ -224,10 +240,12 @@ const StoreUpdate = () => {
           </Button>
         </Stack>
       </Container>
-      <LoadingOverlay open={loading || userDocLoading || storeDocLoading} />
+      <LoadingOverlay open={loading || userDocLoading || storeDocLoading || configDocLoading} />
       <ErrorDialog open={!!error} error={error} />
       <ErrorDialog open={!!userDocError} error={userDocError} />
       <ErrorDialog open={!!storeDocError} error={storeDocError} />
+      <ErrorDialog open={!!configDocError} error={configDocError} />
+      <ErrorDialog open={!!submitError} error={submitError} />
     </>
   );
 };

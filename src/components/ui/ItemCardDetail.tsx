@@ -10,6 +10,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useNavigate } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useEffect, useState } from 'react';
+import { useDocument } from 'react-firebase-hooks/firestore';
 import { ItemProps } from './ItemCard';
 import { Order, User } from './OrderCardDetails';
 import db, { auth, collection, addDoc, doc, getDoc } from '../../configs/firebase';
@@ -43,6 +44,9 @@ const ItemCardDetail = (itemProps: ItemProps) => {
   const [purchaseError, setPurchaseError] = useState<Error | undefined>(undefined);
   const [confirmationDialogState, setConfirmationDialogState] = useState<ConfirmationDialogProps | undefined>();
   const [confirmationError, setConfirmationError] = useState<Error | undefined>(undefined);
+  const [configDoc, configDocLoading, configDocError] = useDocument(doc(db, 'configs/1'), {
+    snapshotListenOptions: { includeMetadataChanges: true },
+  });
 
   useEffect(() => {
     if (!authUser) {
@@ -71,6 +75,10 @@ const ItemCardDetail = (itemProps: ItemProps) => {
   };
 
   const handlePurchaseClick = () => {
+    if (!configDoc?.data()?.enableCreateOrder) {
+      setPurchaseError(Error('現在、注文を受け付けていません。'));
+      return;
+    }
     if (!authUser) {
       setPurchaseError(Error('買い物をするにはログインしてください'));
       return;
@@ -172,8 +180,9 @@ const ItemCardDetail = (itemProps: ItemProps) => {
           </CardActions>
         </Card>
       </Box>
-      <LoadingOverlay open={authUserLoading || userDocLoading || purchaseLoading} />
+      <LoadingOverlay open={configDocLoading || authUserLoading || userDocLoading || purchaseLoading} />
       {confirmationDialogState ? <ConfirmationDialog {...confirmationDialogState} /> : null}
+      <ErrorDialog open={!!configDocError} error={configDocError} />
       <ErrorDialog open={!!authUserError} error={authUserError} />
       <ErrorDialog open={!!userDocError} error={userDocError} />
       <ErrorDialog open={!!purchaseError} error={purchaseError} />
