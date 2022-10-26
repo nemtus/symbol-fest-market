@@ -4,7 +4,7 @@ import TwitterIcon from '@mui/icons-material/Twitter';
 
 const EventCard = () => {
   const handleClickEventInfo = () => {
-    window.open('https://nemtus.com/nemtus-fall-festival-to-be-held/', '_blank');
+    window.open('https://nemtus.com/symbol-fest-market/', '_blank');
   };
 
   const handleClickNemtusHomePage = () => {
