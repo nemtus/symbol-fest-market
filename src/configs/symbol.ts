@@ -2,9 +2,11 @@ import { SymbolFacade } from '@nemtus/symbol-sdk-typescript/esm/facade/SymbolFac
 import { Signature } from '@nemtus/symbol-sdk-typescript/esm/symbol/models';
 import { Configuration, NetworkRoutesApi, NodeRoutesApi } from '@nemtus/symbol-sdk-openapi-generator-typescript-axios';
 
-export const SYMBOL_NETWORK_NAME = process.env.REACT_APP_SYMBOL_PREFIX === 'N' ? 'メインネット' : 'テストネット';
-export const SYMBOL_PREFIX = process.env.REACT_APP_SYMBOL_PREFIX ?? 'T';
-export const SYMBOL_NODES = process.env.REACT_APP_SYMBOL_NODES ? process.env.REACT_APP_SYMBOL_NODES.split(',') : [];
+export const SYMBOL_NETWORK_NAME = import.meta.env.REACT_APP_SYMBOL_PREFIX === 'N' ? 'メインネット' : 'テストネット';
+export const SYMBOL_PREFIX = import.meta.env.REACT_APP_SYMBOL_PREFIX ?? 'T';
+export const SYMBOL_NODES = import.meta.env.REACT_APP_SYMBOL_NODES
+  ? import.meta.env.REACT_APP_SYMBOL_NODES.split(',')
+  : [];
 export const selectRandomNode = () => {
   const randomIndex = Math.floor(Math.random() * SYMBOL_NODES.length);
   return SYMBOL_NODES[randomIndex];
@@ -16,7 +18,7 @@ export const SYMBOL_ADDRESS_REG_EXP =
   SYMBOL_PREFIX === 'N' ? SYMBOL_ADDRESS_REG_EXP_MAINNET : SYMBOL_ADDRESS_REG_EXP_TESTNET;
 
 export const SYMBOL_BLOCK_EXPLORER_URL =
-  process.env.REACT_APP_SYMBOL_PREFIX === 'N' ? 'https://symbol.fyi' : 'https://testnet.symbol.fyi';
+  import.meta.env.REACT_APP_SYMBOL_PREFIX === 'N' ? 'https://symbol.fyi' : 'https://testnet.symbol.fyi';
 
 export const createTransactionPayload = async (
   fromAddress: string,
