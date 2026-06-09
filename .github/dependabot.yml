@@ -1,0 +1,63 @@
+version: 2
+
+updates:
+  # ----------------------------------------------------------------------------
+  # GitHub Actions (workflow `uses:` are SHA-pinned via pinact; Dependabot bumps
+  # both the SHA and the `# vX.Y.Z` comment).
+  # ----------------------------------------------------------------------------
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      # minor + patch bundled into a single PR; majors open individual PRs.
+      github-actions-minor-patch:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
+
+  # ----------------------------------------------------------------------------
+  # App (root) — Vite / React frontend
+  # ----------------------------------------------------------------------------
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      # minor + patch bundled into a single PR; each major opens its own PR.
+      npm-minor-patch:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # @types/node is pinned to the Node 22 runtime; a types major must not
+      # run ahead of the runtime. Minor/patch still update.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+
+  # ----------------------------------------------------------------------------
+  # Cloud Functions
+  # ----------------------------------------------------------------------------
+  - package-ecosystem: npm
+    directory: "/functions"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      functions-npm-minor-patch:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # firebase-admin 14 is rejected by firebase-functions 7's peer range
+      # (peer: ^11 || ^12 || ^13). Revisit once firebase-functions accepts
+      # firebase-admin 14, which will also clear the @google-cloud/* advisories.
+      - dependency-name: "firebase-admin"
+        update-types: ["version-update:semver-major"]
+      # @types/node tracks the Node 22 functions runtime; hold the major.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
