@@ -14,7 +14,7 @@
   },
   "main": "lib/index.js",
   "dependencies": {
-    "@nemtus/symbol-sdk-openapi-generator-typescript-axios": "^0.1.0",
+    "@nemtus/symbol-sdk-openapi-generator-typescript-axios": "^0.2.0",
     "axios": "^1.17.0",
     "firebase-admin": "^13.5.0",
     "firebase-functions": "^7.2.5",

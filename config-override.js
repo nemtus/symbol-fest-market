@@ -12,6 +12,13 @@ module.exports = function override(config) {
     url: require.resolve('url'),
   });
   config.resolve.fallback = fallback;
+  // axios 1.x (and the Symbol OpenAPI SDK that depends on it) ship ESM that
+  // imports 'process/browser' without an extension. webpack 5 enforces
+  // fully-specified ESM requests, so relax that for .mjs/.js modules.
+  config.module.rules.push({
+    test: /\.m?js$/,
+    resolve: { fullySpecified: false },
+  });
   config.plugins = (config.plugins || []).concat([
     new webpack.ProvidePlugin({
       process: 'process/browser',
