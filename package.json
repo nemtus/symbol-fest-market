@@ -71,5 +71,10 @@
     "vite": "^7.3.5",
     "vite-plugin-node-polyfills": "^0.28.0",
     "vitest": "^3.2.6"
+  },
+  "overrides": {
+    "bitcore-lib": {
+      "bn.js": "4.12.3"
+    }
   }
 }
