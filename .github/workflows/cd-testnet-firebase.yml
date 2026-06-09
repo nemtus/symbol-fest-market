@@ -6,6 +6,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: testnet
+    permissions:
+      contents: read
+      id-token: write # mint the OIDC token for Workload Identity Federation
     strategy:
       matrix:
         node: ['22']
@@ -18,4 +22,9 @@ jobs:
           node-version: ${{ matrix.node }}
       - run: npm ci
       - run: npm run build:testnet
-      - run: npx --package=firebase-tools firebase deploy --project=testnet --token=${{ secrets.FIREBASE_TOKEN }} --force
+      - name: Authenticate to Google Cloud (keyless, OIDC + WIF)
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.DEPLOY_SA }}
+      - run: npx --package=firebase-tools firebase deploy --project=testnet --non-interactive --force
