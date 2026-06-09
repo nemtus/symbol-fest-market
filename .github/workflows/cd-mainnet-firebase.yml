@@ -6,12 +6,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: ['16']
+        node: ['22']
     name: Node ${{ matrix.node }} CD Mainnet Firebase
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
       - run: npm ci
