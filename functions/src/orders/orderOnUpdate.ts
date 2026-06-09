@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import * as functions from 'firebase-functions';
+import * as functions from 'firebase-functions/v1';
 import WebSocket from 'ws';
 import { db, auth } from '../utils/firebase/admin';
 import {
