@@ -54,7 +54,7 @@ const StoreCardDetail = (storeProps: StoreProps) => {
   };
 
   return (
-    <Box maxWidth="sm">
+    <Box sx={{ maxWidth: 'sm' }}>
       <Card>
         <CardMedia component="img" image={storeImageFile} alt={storeName} onClick={handleStoreClick} />
         <CardContent>

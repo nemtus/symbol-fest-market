@@ -172,7 +172,7 @@ const OrderCardDetail = (orderProps: OrderProps) => {
 
   return (
     <>
-      <Box maxWidth="sm">
+      <Box sx={{ maxWidth: 'sm' }}>
         <h2>注文状況</h2>
         <Stepper activeStep={activeStepIndex} orientation="vertical">
           <Step key="WAITING_PRICE_INFO">
@@ -216,7 +216,7 @@ const OrderCardDetail = (orderProps: OrderProps) => {
               <Typography variant="body1" color="text.secondary">
                 以下のコピーボタンからトランザクション情報をコピーして、公式デスクトップウォレットの「トランザクションURIをインポート」機能で読み取ってトランザクションの内容を確認した後に送信してください。
               </Typography>
-              <Box display="flex">
+              <Box sx={{ display: 'flex' }}>
                 <IconButton
                   onClick={() => {
                     handleCopy(transactionUri ?? '');

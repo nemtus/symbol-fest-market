@@ -186,7 +186,7 @@ const OrderCard = (orderProps: OrderProps) => {
 
   return (
     <>
-      <Box maxWidth="sm">
+      <Box sx={{ maxWidth: 'sm' }}>
         <Card>
           <CardHeader
             avatar={<Avatar src={order.storeImageFile} onClick={handleStoreAvatarClick} />}
@@ -247,7 +247,7 @@ const OrderCard = (orderProps: OrderProps) => {
                 <Typography variant="body1" color="text.secondary">
                   以下のコピーボタンからトランザクション情報をコピーして、公式デスクトップウォレットの「トランザクションURIをインポート」機能で読み取ってトランザクションの内容を確認した後に送信してください。
                 </Typography>
-                <Box display="flex">
+                <Box sx={{ display: 'flex' }}>
                   <IconButton
                     onClick={() => {
                       handleCopy(transactionUri ?? '');

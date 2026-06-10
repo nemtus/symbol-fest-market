@@ -54,7 +54,7 @@ const ItemCard = (itemProps: ItemProps) => {
   };
 
   return (
-    <Box maxWidth="sm">
+    <Box sx={{ maxWidth: 'sm' }}>
       <Card>
         <CardHeader
           avatar={<Avatar src={storeImageFile} onClick={handleStoreAvatarClick} />}
