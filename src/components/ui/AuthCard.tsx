@@ -11,7 +11,7 @@ const AuthCard = () => {
   }
 
   return (
-    <Box maxWidth="sm">
+    <Box sx={{ maxWidth: 'sm' }}>
       <Card>
         <CardContent>
           <Typography gutterBottom variant="h5" component="div">

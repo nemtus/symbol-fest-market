@@ -16,7 +16,7 @@ const EventCard = () => {
   };
 
   return (
-    <Box maxWidth="sm">
+    <Box sx={{ maxWidth: 'sm' }}>
       <Card>
         <CardMedia
           component="img"
