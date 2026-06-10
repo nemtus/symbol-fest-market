@@ -1,6 +1,8 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Fest Market",
+  "name": "Symbol Fest Market",
+  "description": "SymbolブロックチェーンのネイティブXYMで購入できる、NEMTUS主催イベント限定の物販マーケット。",
+  "lang": "ja",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +22,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
+  "theme_color": "#1976d2",
   "background_color": "#ffffff"
 }
