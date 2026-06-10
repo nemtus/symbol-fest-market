@@ -1,10 +1,6 @@
 import * as functions from 'firebase-functions/v1';
 import { db, auth } from '../../utils/firebase/admin';
-import {
-  assertChallengeNotLocked,
-  buildChallengeFailureUpdate,
-  buildChallengeSuccessReset,
-} from '../../utils/rateLimit';
+import { verifyStoreChallenge } from '../../utils/rateLimit';
 
 interface VerifyStoreAddressRequest {
   userId: string;
@@ -50,17 +46,7 @@ export const httpsOnCallChallengeToVerifyStoreAddress = functions
         .doc(storeId)
         .collection('kyc')
         .doc('secret');
-      const storeKycSecretDoc = await storeKycSecretDocRef.get();
-      const storeKycSecretData = storeKycSecretDoc.data();
-      assertChallengeNotLocked(storeKycSecretData, 'storeAddress');
-      const storeAddressSecret = storeKycSecretData?.storeAddressSecret as string;
-      if (challengedStoreAddressSecret !== storeAddressSecret) {
-        await storeKycSecretDocRef.set(buildChallengeFailureUpdate(storeKycSecretData, 'storeAddress'), {
-          merge: true,
-        });
-        throw new functions.https.HttpsError('unauthenticated', 'Wrong secret');
-      }
-      await storeKycSecretDocRef.set(buildChallengeSuccessReset('storeAddress'), { merge: true });
+      await verifyStoreChallenge(storeKycSecretDocRef, 'storeAddress', challengedStoreAddressSecret);
 
       const { emailVerified, customClaims } = authUser;
       const userKycVerified = emailVerified;

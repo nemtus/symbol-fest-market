@@ -1,10 +1,6 @@
 import * as functions from 'firebase-functions/v1';
 import { db, auth } from '../../utils/firebase/admin';
-import {
-  assertChallengeNotLocked,
-  buildChallengeFailureUpdate,
-  buildChallengeSuccessReset,
-} from '../../utils/rateLimit';
+import { verifyStoreChallenge } from '../../utils/rateLimit';
 
 interface VerifyStorePhoneNumberRequest {
   userId: string;
@@ -50,17 +46,7 @@ export const httpsOnCallChallengeToVerifyStorePhoneNumber = functions
         .doc(storeId)
         .collection('kyc')
         .doc('secret');
-      const storeKycSecretDoc = await storeKycSecretDocRef.get();
-      const storeKycSecretData = storeKycSecretDoc.data();
-      assertChallengeNotLocked(storeKycSecretData, 'storePhoneNumber');
-      const storePhoneNumberSecret = storeKycSecretData?.storePhoneNumberSecret as string;
-      if (challengedStorePhoneNumberSecret !== storePhoneNumberSecret) {
-        await storeKycSecretDocRef.set(buildChallengeFailureUpdate(storeKycSecretData, 'storePhoneNumber'), {
-          merge: true,
-        });
-        throw new functions.https.HttpsError('unauthenticated', 'Wrong secret');
-      }
-      await storeKycSecretDocRef.set(buildChallengeSuccessReset('storePhoneNumber'), { merge: true });
+      await verifyStoreChallenge(storeKycSecretDocRef, 'storePhoneNumber', challengedStorePhoneNumberSecret);
 
       const { emailVerified, customClaims } = authUser;
       const userKycVerified = emailVerified;
