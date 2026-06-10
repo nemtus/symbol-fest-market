@@ -101,14 +101,14 @@ const UserUpdate = () => {
       throw Error("Can't get user document reference");
     }
     await setDoc(userDocRef, { userId, email: user.email, ...data }, { merge: true });
-    navigate(`/users/${userId}`);
+    void navigate(`/users/${userId}`);
   };
 
   const handleCancel = () => {
     if (!userId) {
       throw Error('Invalid userId');
     }
-    navigate(`/users/${userId}`);
+    void navigate(`/users/${userId}`);
   };
 
   useEffect(() => {
@@ -116,7 +116,7 @@ const UserUpdate = () => {
       return;
     }
     if (!(user && userId && userId === user.uid)) {
-      navigate('/auth/sign-in/');
+      void navigate('/auth/sign-in/');
     }
   }, [userId, user, loading, userDocLoading, navigate]);
 

@@ -170,11 +170,11 @@ const OrderCard = (orderProps: OrderProps) => {
   }, [order]);
 
   const handleStoreAvatarClick = () => {
-    navigate(`/stores/${order.storeId}`);
+    void navigate(`/stores/${order.storeId}`);
   };
 
   const handleItemClick = () => {
-    navigate(`/stores/${order.storeId}/items/${order.itemId}`);
+    void navigate(`/stores/${order.storeId}/items/${order.itemId}`);
   };
 
   const handleCopy = (message: string) => {

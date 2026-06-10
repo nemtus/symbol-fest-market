@@ -67,11 +67,11 @@ const ItemCardDetail = (itemProps: ItemProps) => {
   }, [authUser, setUserDocLoading, setUser, setUserDocError]);
 
   const handleStoreAvatarClick = () => {
-    navigate(`/stores/${storeId}`);
+    void navigate(`/stores/${storeId}`);
   };
 
   const handleItemClick = () => {
-    navigate(`/stores/${storeId}/items/${itemId}`);
+    void navigate(`/stores/${storeId}/items/${itemId}`);
   };
 
   const handlePurchaseClick = () => {
@@ -128,7 +128,7 @@ const ItemCardDetail = (itemProps: ItemProps) => {
         setPurchaseLoading(true);
         addDoc(orderCollection, order)
           .then((orderDocRef) => {
-            navigate(`/users/${user.userId}/orders/${orderDocRef.id}`);
+            void navigate(`/users/${user.userId}/orders/${orderDocRef.id}`);
           })
           .catch((err) => {
             setPurchaseError(err as Error);

@@ -71,7 +71,7 @@ const User = () => {
       return;
     }
     if (!(user && userId && userId === user.uid)) {
-      navigate('/auth/sign-in/');
+      void navigate('/auth/sign-in/');
       return;
     }
     const isExists = !!storeDoc?.exists();
@@ -81,7 +81,7 @@ const User = () => {
       .then((res) => {
         setKycStatus(res.data);
         if (!res.data.userKycVerified) {
-          navigate(`users/${userId}/verify-user-email`);
+          void navigate(`users/${userId}/verify-user-email`);
         }
       })
       .catch((err) => {
@@ -112,7 +112,7 @@ const User = () => {
     if (!userId) {
       throw Error('Invalid userId');
     }
-    navigate(`/users/${userId}/update`, {
+    void navigate(`/users/${userId}/update`, {
       state: {
         name: userDoc?.data()?.name ?? '',
         phoneNumber: userDoc?.data()?.phoneNumber ?? '',
@@ -129,7 +129,7 @@ const User = () => {
       throw Error('Invalid userId');
     }
     const storeId = userId;
-    navigate(`/users/${userId}/stores/${storeId}/create`);
+    void navigate(`/users/${userId}/stores/${storeId}/create`);
   };
 
   const handleStore = () => {
@@ -137,7 +137,7 @@ const User = () => {
       throw Error('Invalid userId');
     }
     const storeId = userId;
-    navigate(`/users/${userId}/stores/${storeId}`);
+    void navigate(`/users/${userId}/stores/${storeId}`);
   };
 
   // if (!userId || !user?.uid || userId !== user?.uid) {

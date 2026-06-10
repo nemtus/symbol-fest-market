@@ -207,11 +207,11 @@ const OrdersForStore = () => {
       return;
     }
     if (!(authUser && userId && userId === authUser.uid)) {
-      navigate('/auth/sign-in/');
+      void navigate('/auth/sign-in/');
       return;
     }
     if (userId !== storeId) {
-      navigate(`/users/${userId}`);
+      void navigate(`/users/${userId}`);
       return;
     }
     const isExists = !!userDoc?.exists() && !!storeDoc?.exists();
@@ -220,10 +220,10 @@ const OrdersForStore = () => {
       .then((res) => {
         setKycStatus(res.data);
         if (!res.data.userKycVerified) {
-          navigate(`users/${userId}/verify-user-email`);
+          void navigate(`users/${userId}/verify-user-email`);
         }
         if (!res.data.storeKycVerified) {
-          navigate(`users/${userId}/stores/${storeId}`);
+          void navigate(`users/${userId}/stores/${storeId}`);
         }
       })
       .catch((err) => {

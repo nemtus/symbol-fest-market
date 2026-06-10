@@ -74,12 +74,12 @@ const Store = () => {
     }
 
     if (!(user && userId && userId === user.uid)) {
-      navigate('/auth/sign-in/');
+      void navigate('/auth/sign-in/');
       return;
     }
 
     if (userId !== storeId) {
-      navigate(`/users/${userId}`);
+      void navigate(`/users/${userId}`);
       return;
     }
 
@@ -120,7 +120,7 @@ const Store = () => {
     if (!storeId) {
       throw Error('Invalid storeId');
     }
-    navigate(`/users/${userId}/stores/${storeId}/create`);
+    void navigate(`/users/${userId}/stores/${storeId}/create`);
   };
 
   const handleStoreUpdate = () => {
@@ -130,7 +130,7 @@ const Store = () => {
     if (!storeId) {
       throw Error('Invalid storeId');
     }
-    navigate(`/users/${userId}/stores/${storeId}/update`, {
+    void navigate(`/users/${userId}/stores/${storeId}/update`, {
       state: {
         storeName: storeDoc?.data()?.storeName ?? '',
         storeEmail: storeDoc?.data()?.storeEmail ?? '',

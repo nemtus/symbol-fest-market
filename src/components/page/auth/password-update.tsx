@@ -48,15 +48,15 @@ const PasswordUpdate = () => {
 
   useEffect(() => {
     if (errorUser) {
-      navigate('/auth/sign-in/');
+      void navigate('/auth/sign-in/');
       return;
     }
     if (!user && !loadingUser) {
-      navigate('/auth/sign-in/');
+      void navigate('/auth/sign-in/');
       return;
     }
     if (!user?.uid) {
-      navigate('/auth/sign-in/');
+      void navigate('/auth/sign-in/');
     }
   });
 

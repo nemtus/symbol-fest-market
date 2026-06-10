@@ -42,7 +42,7 @@ const UploadStoreImage = () => {
       setSetDocLoading(true);
       await setDoc(storeDocRef, { storeImageFile }, { merge: true });
       setSetDocLoading(false);
-      navigate(`/users/${userId}/stores/${storeId}`);
+      void navigate(`/users/${userId}/stores/${storeId}`);
     } catch (err) {
       setError(err as Error);
       setStorageUploading(false);

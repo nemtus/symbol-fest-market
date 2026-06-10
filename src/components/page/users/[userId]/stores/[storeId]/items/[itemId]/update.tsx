@@ -157,7 +157,7 @@ const ItemUpdate = () => {
     }
 
     await setDoc(itemDocRef, { itemId, ...data }, { merge: true });
-    navigate(`/users/${userId}/stores/${storeId}/items/${itemId}`);
+    void navigate(`/users/${userId}/stores/${storeId}/items/${itemId}`);
   };
 
   useEffect(() => {
@@ -165,11 +165,11 @@ const ItemUpdate = () => {
       return;
     }
     if (!(user && userId && userId === user.uid)) {
-      navigate('/auth/sign-in/');
+      void navigate('/auth/sign-in/');
       return;
     }
     if (userId !== storeId) {
-      navigate(`/users/${userId}`);
+      void navigate(`/users/${userId}`);
       return;
     }
     setKycStatusLoading(true);
@@ -177,10 +177,10 @@ const ItemUpdate = () => {
       .then((res) => {
         setKycStatus(res.data);
         if (!res.data.userKycVerified) {
-          navigate(`users/${userId}/verify-user-email`);
+          void navigate(`users/${userId}/verify-user-email`);
         }
         if (!res.data.storeKycVerified) {
-          navigate(`users/${userId}/stores/${storeId}`);
+          void navigate(`users/${userId}/stores/${storeId}`);
         }
       })
       .catch((err) => {
