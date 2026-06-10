@@ -27,3 +27,6 @@ yarn-error.log*
 .firebase/*
 extensions/firestore-send-email.env
 extensions/firestore-send-email.secret.local
+
+# Serena MCP tool cache
+.serena/

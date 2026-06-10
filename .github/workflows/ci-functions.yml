@@ -6,15 +6,22 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: ['16']
+        node: ['22']
     name: Node ${{ matrix.node }} CI firebase functions
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
       - name: Setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ matrix.node }}
+      - name: Audit root dependencies (fail on high/critical; moderate allowed)
+        run: npm audit --audit-level=high
       - run: npm ci
+      - name: Audit functions dependencies (fail on high/critical; moderate allowed)
+        run: npm audit --audit-level=high
+        working-directory: ./functions
       - run: npm ci
         working-directory: ./functions
       - run: npm run build

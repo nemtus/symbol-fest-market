@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import * as functions from 'firebase-functions';
+import * as functions from 'firebase-functions/v1';
 import WebSocket from 'ws';
+import { TransactionMetaDTO } from '@nemtus/symbol-sdk-openapi-generator-typescript-axios';
 import { db, auth } from '../utils/firebase/admin';
 import {
   fetchNetworkCurrencyMosaicId,
@@ -211,14 +212,14 @@ export const orderOnUpdate = functions
       );
       if (confirmedTransactions.length > 0) {
         functions.logger.info('orderOnUpdate', 'confirmed transaction is found with REST API');
-        const orderTxHash = confirmedTransactions[0].meta.hash;
+        const orderTxHash = (confirmedTransactions[0].meta as TransactionMetaDTO).hash;
         const orderStatus = 'CONFIRMED';
         await orderDocRef.set({ orderTxHash, orderStatus }, { merge: true });
         return;
       }
       if (unconfirmedTransactions.length > 0) {
         functions.logger.info('orderOnUpdate', 'unconfirmed transaction is found with REST API');
-        const orderTxHash = unconfirmedTransactions[0].meta.hash;
+        const orderTxHash = (unconfirmedTransactions[0].meta as TransactionMetaDTO).hash;
         const orderStatus = 'UNCONFIRMED';
         await orderDocRef.set({ orderTxHash, orderStatus }, { merge: true });
       }

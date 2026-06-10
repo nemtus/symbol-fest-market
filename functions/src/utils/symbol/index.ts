@@ -3,6 +3,7 @@ import {
   NetworkRoutesApi,
   TransactionInfoDTO,
   TransactionRoutesApi,
+  TransferTransactionDTO,
 } from '@nemtus/symbol-sdk-openapi-generator-typescript-axios';
 
 export const SYMBOL_NODES = process.env.SYMBOL_NODES ? process.env.SYMBOL_NODES.split(',') : [];
@@ -51,7 +52,10 @@ export const searchUnconfirmedTransactions = async (
     const unconfirmedTransactions = unconfirmedTransactionsWithPage.data.data;
     const targetUnconfirmedTransactions = unconfirmedTransactions.filter((transactionInfoDTO: TransactionInfoDTO) => {
       const isTransferTransaction = transactionInfoDTO.transaction.type === 16724;
-      const transactionMessage = Buffer.from((transactionInfoDTO.transaction.message ?? '').slice(2), 'hex').toString();
+      const transactionMessage = Buffer.from(
+        ((transactionInfoDTO.transaction as TransferTransactionDTO).message ?? '').slice(2),
+        'hex',
+      ).toString();
       const isTargetMessage = transactionMessage === message;
       return isTransferTransaction && isTargetMessage;
     });
@@ -83,7 +87,10 @@ export const searchConfirmedTransactions = async (
     const confirmedTransactions = confirmedTransactionsWithPage.data.data;
     const targetConfirmedTransactions = confirmedTransactions.filter((transactionInfoDTO: TransactionInfoDTO) => {
       const isTransferTransaction = transactionInfoDTO.transaction.type === 16724;
-      const transactionMessage = Buffer.from((transactionInfoDTO.transaction.message ?? '').slice(2), 'hex').toString();
+      const transactionMessage = Buffer.from(
+        ((transactionInfoDTO.transaction as TransferTransactionDTO).message ?? '').slice(2),
+        'hex',
+      ).toString();
       const isTargetMessage = transactionMessage === message;
       return isTransferTransaction && isTargetMessage;
     });

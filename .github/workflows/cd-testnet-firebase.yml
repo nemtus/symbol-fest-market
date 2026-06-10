@@ -6,16 +6,32 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: testnet
+    permissions:
+      contents: read
+      id-token: write # mint the OIDC token for Workload Identity Federation
     strategy:
       matrix:
-        node: ['16']
+        node: ['22']
     name: Node ${{ matrix.node }} CD Testnet Firebase
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
       - name: Setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ matrix.node }}
+      - name: Audit root dependencies (fail on high/critical; moderate allowed)
+        run: npm audit --audit-level=high
       - run: npm ci
       - run: npm run build:testnet
-      - run: npx --package=firebase-tools firebase deploy --project=testnet --token=${{ secrets.FIREBASE_TOKEN }} --force
+      - name: Audit functions dependencies (fail on high/critical; moderate allowed)
+        run: npm audit --audit-level=high
+        working-directory: ./functions
+      - name: Authenticate to Google Cloud (keyless, OIDC + WIF)
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.DEPLOY_SA }}
+      - run: npx --package=firebase-tools firebase deploy --project=testnet --non-interactive --force
