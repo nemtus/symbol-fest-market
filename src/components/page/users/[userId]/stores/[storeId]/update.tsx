@@ -54,6 +54,8 @@ const schema = yup.object({
       `Symbolアドレスは${SYMBOL_PREFIX}から始まる39文字の半角大文字英数字で入力してください`,
     ),
   storeDescription: yup.string().required('必須です'),
+  storeImageFile: yup.string().defined(),
+  storeCoverImageFile: yup.string().defined(),
 });
 
 const StoreUpdate = () => {

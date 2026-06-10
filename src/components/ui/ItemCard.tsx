@@ -29,7 +29,7 @@ export interface ItemProps {
 const ItemCard = (itemProps: ItemProps) => {
   const navigate = useNavigate();
   const { store, item } = itemProps;
-  const { itemId, itemName, itemPrice, itemPriceUnit, itemDescription, itemImageFile, itemStatus } = item;
+  const { itemId, itemName, itemPrice, itemPriceUnit, itemDescription, itemImageFile } = item;
   const {
     storeId,
     storeName,
