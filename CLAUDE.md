@@ -56,6 +56,16 @@ functions 5001, firestore 8080, hosting 5000, pubsub 8085, storage 9199).
   (and `wss://<node>:3001/ws`); a node is picked at random per call via
   `selectRandomNode()`. When transactions aren't being detected, a bad node in
   the env list is a common cause.
+- **Env files are committed on purpose, and only hold non-secret config.** The
+  `.env*` (root) and `functions/.env*` files are checked in following Vite's /
+  Firebase's convention (`.env` + `.env.[mode|alias]` tracked; secret overrides
+  go in `.env*.local`, which is gitignored — see `.env.example`). The Firebase
+  Web config keys are **public client identifiers, not secrets** (access is
+  governed by Firestore rules / Auth, and the browser API keys are
+  HTTP-referrer/API-restricted in Google Cloud). GitHub Secret Scanning flags the
+  Firebase `apiKey` as a `google_api_key`; those alerts are intentionally
+  resolved as `wont_fix`. Never put a real secret in a tracked `.env*`; use
+  `.env*.local` or Cloud Secret Manager (`defineSecret`) instead.
 
 ## Deployment
 
