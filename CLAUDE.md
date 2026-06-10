@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 A web marketplace where stores sell items and buyers pay in XYM (the Symbol
-blockchain's native currency). Built as a Create React App frontend plus
+blockchain's native currency). Built as a Vite + React frontend plus
 Firebase (Auth, Firestore, Cloud Functions, Storage, Hosting). UI text is in
 Japanese. There are two live environments backed by separate Firebase projects:
 **testnet** (`symbol-fest-market-test`) and **mainnet** (`symbol-fest-market`),
@@ -16,12 +16,12 @@ distinguished by which Symbol network and node list the build targets.
 Frontend (run from repo root):
 
 ```bash
-npm start                 # dev server on :3000 (uses .env → testnet config + emulators)
-npm run build             # production build (default .env)
-npm run build:testnet     # build with .env.testnet
-npm run build:mainnet     # build with .env.mainnet
-npm test                  # CRA/Jest watch mode
-npm test -- src/App.test.tsx --watchAll=false   # run a single test file once
+npm start                 # Vite dev server on :3000 (uses .env → testnet config + emulators)
+npm run build             # Vite production build (default .env → build/)
+npm run build:testnet     # vite build --mode testnet (.env.testnet)
+npm run build:mainnet     # vite build --mode mainnet (.env.mainnet)
+npm test                  # Vitest, run once (npm run test:watch for watch mode)
+npm test -- src/App.test.tsx   # run a single test file
 npm run lint              # eslint over src
 npm run format            # eslint --fix + prettier --write over src
 ```
@@ -38,17 +38,19 @@ npm run logs              # tail deployed function logs
 Local full-stack development uses the Firebase emulator suite (auth 9099,
 functions 5001, firestore 8080, hosting 5000, pubsub 8085, storage 9199).
 `src/configs/firebase.ts` auto-connects to these emulators whenever
-`NODE_ENV === 'development'` (i.e. under `npm start`).
+`import.meta.env.DEV` is true (i.e. under `npm start` / `vite`).
 
 ## Build & config specifics
 
-- This is **not** a plain CRA build. `react-app-rewired` + `config-override.js`
-  inject Node polyfills (`crypto-browserify`, `stream`, `buffer`, etc.) that the
-  Symbol SDK needs in the browser. Use `react-app-rewired`, never `react-scripts`
-  directly.
-- Environment is selected entirely by `.env*` files via `dotenv-cli`. The key
-  switch is `REACT_APP_SYMBOL_PREFIX` (`T` = testnet, `N` = mainnet) and
-  `REACT_APP_SYMBOL_NODES` (comma-separated Symbol node hostnames). Most
+- Build tooling is **Vite** (`vite.config.ts`), not CRA. The Node builtins the
+  Symbol SDK needs in the browser (`Buffer`, `crypto`, `process`, ...) are
+  provided by `vite-plugin-node-polyfills`. Tests run on **Vitest** (jsdom).
+- Environment is selected by Vite **mode**: `.env` (default / production build),
+  `.env.testnet` (`--mode testnet`), `.env.mainnet` (`--mode mainnet`). Vars keep
+  the `REACT_APP_` prefix (Vite `envPrefix`) and are read via
+  `import.meta.env.REACT_APP_*` (not `process.env`). The key switch is
+  `REACT_APP_SYMBOL_PREFIX` (`T` = testnet, `N` = mainnet) and
+  `REACT_APP_SYMBOL_NODES` (comma-separated Symbol node hostnames); most
   network/UI branching keys off `SYMBOL_PREFIX` in `src/configs/symbol.ts`.
 - Functions REST/WebSocket calls hit Symbol nodes at `https://<node>:3001`
   (and `wss://<node>:3001/ws`); a node is picked at random per call via
@@ -57,11 +59,14 @@ functions 5001, firestore 8080, hosting 5000, pubsub 8085, storage 9199).
 
 ## Deployment
 
-- Hosting serves the CRA `build/` dir with a SPA rewrite (`** → /index.html`).
-- CI/CD via GitHub Actions: `ci-react.yml` and `ci-functions.yml` lint/build on
-  PRs. **Push to `main` auto-deploys to testnet** (`cd-testnet-firebase.yml`).
-  Mainnet deploy is **manual only** (`workflow_dispatch` on
-  `cd-mainnet-firebase.yml`). Firebase project aliases live in `.firebaserc`.
+- Hosting serves the Vite `build/` dir (`vite.config.ts` sets
+  `build.outDir: 'build'`) with a SPA rewrite (`** → /index.html`).
+- CI/CD via GitHub Actions: `ci-react.yml` / `ci-functions.yml` build on PRs
+  (each gated by `npm audit --audit-level=high`). **Push to `main` auto-deploys
+  to testnet** (`cd-testnet-firebase.yml`). Mainnet deploy is **manual only**
+  (`workflow_dispatch` on `cd-mainnet-firebase.yml`). Deploys authenticate
+  keylessly via OIDC + Workload Identity Federation (no `FIREBASE_TOKEN`).
+  Firebase project aliases live in `.firebaserc`.
 
 ## Architecture
 
@@ -129,4 +134,5 @@ Auth user. Admin-only actions across `firestore.rules` key off
   `prettier`. Run `npm run format` before committing frontend changes.
 - Code comments and all user-facing strings are in Japanese — match the existing
   language when editing.
-- Node 16 is the pinned runtime for functions (`functions/package.json` engines).
+- Node 22 is the pinned runtime for functions (`functions/package.json` engines)
+  and the CI/CD baseline.
