@@ -18,8 +18,13 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ matrix.node }}
+      - name: Audit root dependencies (fail on high/critical; moderate allowed)
+        run: npm audit --audit-level=high
       - run: npm ci
       - run: npm run build:mainnet
+      - name: Audit functions dependencies (fail on high/critical; moderate allowed)
+        run: npm audit --audit-level=high
+        working-directory: ./functions
       - name: Authenticate to Google Cloud (keyless, OIDC + WIF)
         uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13
         with:
