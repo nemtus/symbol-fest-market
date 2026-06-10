@@ -1,5 +1,6 @@
 import * as functions from 'firebase-functions/v1';
 import { db, auth } from '../../utils/firebase/admin';
+import { verifyStoreChallenge } from '../../utils/rateLimit';
 
 interface VerifyStorePhoneNumberRequest {
   userId: string;
@@ -45,11 +46,7 @@ export const httpsOnCallChallengeToVerifyStorePhoneNumber = functions
         .doc(storeId)
         .collection('kyc')
         .doc('secret');
-      const storeKycSecretDoc = await storeKycSecretDocRef.get();
-      const storePhoneNumberSecret = storeKycSecretDoc.data()?.storePhoneNumberSecret as string;
-      if (challengedStorePhoneNumberSecret !== storePhoneNumberSecret) {
-        throw new functions.https.HttpsError('unauthenticated', 'Wrong secret');
-      }
+      await verifyStoreChallenge(storeKycSecretDocRef, 'storePhoneNumber', challengedStorePhoneNumberSecret);
 
       const { emailVerified, customClaims } = authUser;
       const userKycVerified = emailVerified;
@@ -90,6 +87,10 @@ export const httpsOnCallChallengeToVerifyStorePhoneNumber = functions
       return { storePhoneNumberVerified };
     } catch (error) {
       functions.logger.warn('httpsOnCallChallengeToVerifyStorePhoneNumber', error);
+      // ロック中・確認コード誤り等のHttpsErrorは、状態を呼び出し側に伝えるためそのまま投げ直す
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
       throw new functions.https.HttpsError('unknown', "Can't verify store phone number");
     }
   });

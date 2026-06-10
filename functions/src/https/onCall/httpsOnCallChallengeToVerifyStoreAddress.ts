@@ -1,5 +1,6 @@
 import * as functions from 'firebase-functions/v1';
 import { db, auth } from '../../utils/firebase/admin';
+import { verifyStoreChallenge } from '../../utils/rateLimit';
 
 interface VerifyStoreAddressRequest {
   userId: string;
@@ -45,11 +46,7 @@ export const httpsOnCallChallengeToVerifyStoreAddress = functions
         .doc(storeId)
         .collection('kyc')
         .doc('secret');
-      const storeKycSecretDoc = await storeKycSecretDocRef.get();
-      const storeAddressSecret = storeKycSecretDoc.data()?.storeAddressSecret as string;
-      if (challengedStoreAddressSecret !== storeAddressSecret) {
-        throw new functions.https.HttpsError('unauthenticated', 'Wrong secret');
-      }
+      await verifyStoreChallenge(storeKycSecretDocRef, 'storeAddress', challengedStoreAddressSecret);
 
       const { emailVerified, customClaims } = authUser;
       const userKycVerified = emailVerified;
@@ -90,6 +87,10 @@ export const httpsOnCallChallengeToVerifyStoreAddress = functions
       return { storeAddressVerified };
     } catch (error) {
       functions.logger.warn('httpsOnCallChallengeToVerifyStoreAddress', error);
+      // ロック中・確認コード誤り等のHttpsErrorは、状態を呼び出し側に伝えるためそのまま投げ直す
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
       throw new functions.https.HttpsError('unknown', "Can't verify store address");
     }
   });
