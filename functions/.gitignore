@@ -11,3 +11,8 @@ node_modules/
 *.log
 
 credentials.json
+
+# 公開前提の .env / .env.testnet / .env.mainnet は追跡対象。
+# 機密値を置くローカル上書きファイル（*.local）のみ除外する（.env.example 参照）。
+.env.local
+.env.*.local
