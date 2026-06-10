@@ -15,7 +15,14 @@
     "plugin:import/typescript",
     "prettier"
   ],
-  "overrides": [],
+  "overrides": [
+    {
+      "files": ["src/setupTests.ts", "**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
+      "rules": {
+        "import/no-extraneous-dependencies": ["error", { "devDependencies": true }]
+      }
+    }
+  ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaFeatures": {

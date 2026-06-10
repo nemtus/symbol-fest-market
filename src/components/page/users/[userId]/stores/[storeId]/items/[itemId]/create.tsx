@@ -34,10 +34,11 @@ interface ItemCreateFormInput {
 const schema = yup.object({
   itemName: yup.string().required('必須です'),
   itemPrice: yup.number().min(1, '0より大きな値を入力してください').required('必須です'),
-  itemPriceUnit: yup.string().required('必須です').matches(/^JPY$/, '有効な値を選択してください'),
+  itemPriceUnit: yup.string<'JPY'>().required('必須です').matches(/^JPY$/, '有効な値を選択してください'),
   itemDescription: yup.string().required('必須です'),
+  itemImageFile: yup.string().defined(),
   itemStatus: yup
-    .string()
+    .string<'ON_SALE' | 'SOLD_OUT'>()
     .required('必須です')
     .matches(/^(ON_SALE|SOLD_OUT)$/, '有効な値を選択してください'),
 });

@@ -2,12 +2,20 @@ name: CI React
 on:
   pull_request:
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
     strategy:
+      # 1 つのチェックが落ちても他のチェックは最後まで走らせる（全失敗を一覧したい）
+      fail-fast: false
       matrix:
         node: ['22']
-    name: Node ${{ matrix.node }} CI React
+        task:
+          - { name: Lint, run: npm run lint }
+          - { name: Format, run: npm run format:check }
+          - { name: Typecheck, run: npm run typecheck }
+          - { name: Test, run: npm test }
+          - { name: Build, run: npm run build }
+    name: ${{ matrix.task.name }} (React, Node ${{ matrix.node }})
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
@@ -16,7 +24,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ matrix.node }}
+          cache: npm
       - name: Audit dependencies (fail on high/critical; moderate allowed)
         run: npm audit --audit-level=high
       - run: npm ci
-      - run: npm run build
+      - run: ${{ matrix.task.run }}

@@ -25,7 +25,7 @@ import ErrorDialog from '../../../../../../ui/ErrorDialog';
 
 interface Column {
   id: // | 'userId'
-  | 'email'
+    | 'email'
     | 'name'
     | 'phoneNumber'
     | 'zipCode'
