@@ -4,6 +4,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # checkout のみ。書き込み権限は不要
     strategy:
       matrix:
         node: ['22']

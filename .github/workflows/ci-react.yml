@@ -4,6 +4,8 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # checkout のみ。書き込み権限は不要
     strategy:
       # 1 つのチェックが落ちても他のチェックは最後まで走らせる（全失敗を一覧したい）
       fail-fast: false
