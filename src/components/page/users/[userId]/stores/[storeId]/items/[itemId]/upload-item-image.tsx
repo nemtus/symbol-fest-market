@@ -45,7 +45,7 @@ const UploadItemImage = () => {
       setSetDocLoading(true);
       await setDoc(itemDocRef, { itemImageFile }, { merge: true });
       setSetDocLoading(false);
-      navigate(`/users/${userId}/stores/${storeId}/items/${itemId}`);
+      void navigate(`/users/${userId}/stores/${storeId}/items/${itemId}`);
     } catch (err) {
       setError(err as Error);
       setStorageUploading(false);

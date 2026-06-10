@@ -46,11 +46,11 @@ const ItemCard = (itemProps: ItemProps) => {
   } = store;
 
   const handleStoreAvatarClick = () => {
-    navigate(`/stores/${storeId}`);
+    void navigate(`/stores/${storeId}`);
   };
 
   const handleItemClick = () => {
-    navigate(`/stores/${storeId}/items/${itemId}`);
+    void navigate(`/stores/${storeId}/items/${itemId}`);
   };
 
   return (

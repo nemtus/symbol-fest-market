@@ -33,7 +33,7 @@ const ProfileMenu = () => {
     if (!user?.uid) {
       throw Error('Invalid userId');
     }
-    navigate(`/users/${user?.uid}`);
+    void navigate(`/users/${user?.uid}`);
   };
 
   const handleOrdersForUser = () => {
@@ -41,7 +41,7 @@ const ProfileMenu = () => {
     if (!user?.uid) {
       throw Error('Invalid userId');
     }
-    navigate(`/users/${user?.uid}/orders`);
+    void navigate(`/users/${user?.uid}/orders`);
   };
 
   const handleStore = () => {
@@ -49,7 +49,7 @@ const ProfileMenu = () => {
     if (!user?.uid) {
       throw Error('Invalid userId');
     }
-    navigate(`/users/${user?.uid}/stores/${user?.uid}`);
+    void navigate(`/users/${user?.uid}/stores/${user?.uid}`);
   };
 
   const handleItem = () => {
@@ -57,7 +57,7 @@ const ProfileMenu = () => {
     if (!user?.uid) {
       throw Error('Invalid userId');
     }
-    navigate(`/users/${user?.uid}/stores/${user?.uid}/items`);
+    void navigate(`/users/${user?.uid}/stores/${user?.uid}/items`);
   };
 
   const handleOrdersForStore = () => {
@@ -65,12 +65,12 @@ const ProfileMenu = () => {
     if (!user?.uid) {
       throw Error('Invalid userId');
     }
-    navigate(`/users/${user?.uid}/stores/${user?.uid}/orders`);
+    void navigate(`/users/${user?.uid}/stores/${user?.uid}/orders`);
   };
 
   const handlePasswordUpdate = () => {
     handleClose();
-    navigate('/auth/password-update/');
+    void navigate('/auth/password-update/');
   };
 
   const handleSignOut = () => {
@@ -78,17 +78,17 @@ const ProfileMenu = () => {
     signOut(auth)
       .then(() => {})
       .catch(() => {});
-    navigate('/');
+    void navigate('/');
   };
 
   const handleSignUp = () => {
     handleClose();
-    navigate('/auth/sign-up/');
+    void navigate('/auth/sign-up/');
   };
 
   const handleSignIn = () => {
     handleClose();
-    navigate('/auth/sign-in/');
+    void navigate('/auth/sign-in/');
   };
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {

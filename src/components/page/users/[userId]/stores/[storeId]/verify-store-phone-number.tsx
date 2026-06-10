@@ -62,11 +62,11 @@ const VerifyStorePhoneNumber = () => {
       return;
     }
     if (!(user && userId && userId === user.uid)) {
-      navigate('/auth/sign-in/');
+      void navigate('/auth/sign-in/');
       return;
     }
     if (userId !== storeId) {
-      navigate(`/users/${userId}`);
+      void navigate(`/users/${userId}`);
     }
   });
 
@@ -87,7 +87,7 @@ const VerifyStorePhoneNumber = () => {
     httpsOnCallChallengeToVerifyStorePhoneNumber(challengeToVerifyStorePhoneNumberRequest)
       .then((res) => {
         if (res.data.storePhoneNumberVerified) {
-          navigate(`/users/${userId}/stores/${storeId}/`);
+          void navigate(`/users/${userId}/stores/${storeId}/`);
         }
       })
       .catch((err) => {
@@ -105,7 +105,7 @@ const VerifyStorePhoneNumber = () => {
     if (!storeId) {
       return;
     }
-    navigate(`/users/${userId}/stores/${storeId}/`);
+    void navigate(`/users/${userId}/stores/${storeId}/`);
   };
 
   return (

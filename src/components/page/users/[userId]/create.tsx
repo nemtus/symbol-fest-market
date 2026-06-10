@@ -118,18 +118,18 @@ const UserCreate = () => {
       return;
     }
     await setDoc(userDocRef, { userId, email: user.email, ...data }, { merge: true });
-    navigate(`/users/${userId}`);
+    void navigate(`/users/${userId}`);
   };
 
   useEffect(() => {
     if (!(!loading && user && userId && userId === user.uid)) {
-      navigate('/auth/sign-in/');
+      void navigate('/auth/sign-in/');
       return;
     }
     httpsOnCallVerifyKyc({ userId, storeId: userId })
       .then((res) => {
         if (!res.data.emailVerified) {
-          navigate(`/users/${userId}/verify-user-email`);
+          void navigate(`/users/${userId}/verify-user-email`);
         }
         setKyc(res.data);
       })

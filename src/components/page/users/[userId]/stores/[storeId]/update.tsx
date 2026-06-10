@@ -142,7 +142,7 @@ const StoreUpdate = () => {
     }
 
     await setDoc(storeDocRef, { storeId, ...data }, { merge: true });
-    navigate(`/users/${userId}/stores/${storeId}`);
+    void navigate(`/users/${userId}/stores/${storeId}`);
   };
 
   useEffect(() => {
@@ -151,12 +151,12 @@ const StoreUpdate = () => {
     }
 
     if (!(user && userId && userId === user.uid)) {
-      navigate('/auth/sign-in/');
+      void navigate('/auth/sign-in/');
       return;
     }
 
     if (userId !== storeId) {
-      navigate(`/users/${userId}`);
+      void navigate(`/users/${userId}`);
     }
   }, [userId, storeId, user, loading, userDocLoading, storeDocLoading, navigate]);
 

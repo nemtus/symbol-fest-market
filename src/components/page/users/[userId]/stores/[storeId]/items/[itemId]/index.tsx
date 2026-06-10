@@ -73,11 +73,11 @@ const Item = () => {
       return;
     }
     if (!(user && userId && userId === user.uid)) {
-      navigate('/auth/sign-in/');
+      void navigate('/auth/sign-in/');
       return;
     }
     if (userId !== storeId) {
-      navigate(`/users/${userId}`);
+      void navigate(`/users/${userId}`);
       return;
     }
     const isItemExists = !!userDoc?.exists() && !!storeDoc?.exists() && !!itemDoc?.exists();
@@ -87,10 +87,10 @@ const Item = () => {
       .then((res) => {
         setKycStatus(res.data);
         if (!res.data.userKycVerified) {
-          navigate(`users/${userId}/verify-user-email`);
+          void navigate(`users/${userId}/verify-user-email`);
         }
         if (!res.data.storeKycVerified) {
-          navigate(`users/${userId}/stores/${storeId}`);
+          void navigate(`users/${userId}/stores/${storeId}`);
         }
       })
       .catch((err) => {
@@ -121,7 +121,7 @@ const Item = () => {
     if (!storeId) {
       throw Error('Invalid storeId');
     }
-    navigate(`/users/${userId}/stores/${storeId}/items`);
+    void navigate(`/users/${userId}/stores/${storeId}/items`);
   };
 
   const handleItemUpdate = () => {
@@ -134,7 +134,7 @@ const Item = () => {
     if (!itemId) {
       throw Error('Invalid itemId');
     }
-    navigate(`/users/${userId}/stores/${storeId}/items/${itemId}/update`, {
+    void navigate(`/users/${userId}/stores/${storeId}/items/${itemId}/update`, {
       state: {
         itemName: itemDoc?.data()?.itemName,
         itemPrice: itemDoc?.data()?.itemPrice,

@@ -36,7 +36,7 @@ const VerifyUserEmail = () => {
 
   useEffect(() => {
     if (!(!loading && user && userId && userId === user.uid)) {
-      navigate('/auth/sign-in/');
+      void navigate('/auth/sign-in/');
       return;
     }
     setEmailVerifiedLoading(true);
@@ -51,9 +51,9 @@ const VerifyUserEmail = () => {
           return;
         }
         if (emailVerifiedResult && userDoc.exists()) {
-          navigate(`/users/${userId}`);
+          void navigate(`/users/${userId}`);
         } else {
-          navigate(`/users/${userId}/create`);
+          void navigate(`/users/${userId}/create`);
         }
       })
       .catch((err) => {
@@ -81,9 +81,9 @@ const VerifyUserEmail = () => {
           return;
         }
         if (emailVerifiedResult && userDoc.exists()) {
-          navigate(`/users/${user.uid}`);
+          void navigate(`/users/${user.uid}`);
         } else {
-          navigate(`/users/${user.uid}/create`);
+          void navigate(`/users/${user.uid}/create`);
         }
       })
       .catch((err) => {

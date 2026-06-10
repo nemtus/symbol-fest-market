@@ -32,7 +32,7 @@ const AppHeader = () => {
   };
 
   const handleNavigate = (path: string) => {
-    navigate(path);
+    void navigate(path);
   };
 
   const menuListData = [

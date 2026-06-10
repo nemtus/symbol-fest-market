@@ -44,7 +44,7 @@ const StoreCard = (storeProps: StoreProps) => {
   } = store;
   const navigate = useNavigate();
   const handleStoreClick = () => {
-    navigate(`/stores/${storeId}`);
+    void navigate(`/stores/${storeId}`);
   };
 
   return (
