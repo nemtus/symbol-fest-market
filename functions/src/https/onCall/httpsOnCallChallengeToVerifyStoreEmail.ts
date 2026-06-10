@@ -1,5 +1,10 @@
 import * as functions from 'firebase-functions/v1';
 import { db, auth } from '../../utils/firebase/admin';
+import {
+  assertChallengeNotLocked,
+  buildChallengeFailureUpdate,
+  buildChallengeSuccessReset,
+} from '../../utils/rateLimit';
 
 interface VerifyStoreEmailRequest {
   userId: string;
@@ -46,10 +51,14 @@ export const httpsOnCallChallengeToVerifyStoreEmail = functions
         .collection('kyc')
         .doc('secret');
       const storeKycSecretDoc = await storeKycSecretDocRef.get();
-      const storeEmailSecret = storeKycSecretDoc.data()?.storeEmailSecret as string;
+      const storeKycSecretData = storeKycSecretDoc.data();
+      assertChallengeNotLocked(storeKycSecretData, 'storeEmail');
+      const storeEmailSecret = storeKycSecretData?.storeEmailSecret as string;
       if (challengedStoreEmailSecret !== storeEmailSecret) {
+        await storeKycSecretDocRef.set(buildChallengeFailureUpdate(storeKycSecretData, 'storeEmail'), { merge: true });
         throw new functions.https.HttpsError('unauthenticated', 'Wrong secret');
       }
+      await storeKycSecretDocRef.set(buildChallengeSuccessReset('storeEmail'), { merge: true });
 
       const { emailVerified, customClaims } = authUser;
       const userKycVerified = emailVerified;
@@ -90,6 +99,10 @@ export const httpsOnCallChallengeToVerifyStoreEmail = functions
       return { storeEmailVerified };
     } catch (error) {
       functions.logger.warn('httpsOnCallChallengeToVerifyStoreEmail', error);
+      // ロック中・確認コード誤り等のHttpsErrorは、状態を呼び出し側に伝えるためそのまま投げ直す
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
       throw new functions.https.HttpsError('unknown', "Can't verify store email");
     }
   });
