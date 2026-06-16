@@ -70,7 +70,7 @@
     "firebase-tools": "^15.19.1",
     "jsdom": "^29.1.1",
     "prettier": "^3.8.3",
-    "vite": "^7.3.5",
+    "vite": "^8.0.16",
     "vite-plugin-node-polyfills": "^0.28.0",
     "vitest": "^3.2.6"
   },
