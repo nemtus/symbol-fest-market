@@ -1,0 +1,28 @@
+name: pinact (verify SHA pinning)
+
+# Validates that every workflow `uses:` is pinned to a full-length commit SHA,
+# so an unpinned ref surfaces in the PR instead of slipping into main. The repo
+# already carries .pinact.yaml; this adds the enforcing CI job (validate-only:
+# `fix: "false"` never modifies files or pushes, so no write token is needed).
+# Dependabot's github-actions ecosystem keeps the pins current.
+
+on:
+  pull_request: {}
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pinact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      - uses: suzuki-shunsuke/pinact-action@896d595f299e71d65b9d28349d6956abe144390a # v3.0.0
+        with:
+          fix: "false"
