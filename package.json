@@ -16,7 +16,7 @@
     "@types/node": "^22.19.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "axios": "^1.17.0",
+    "axios": "^1.19.0",
     "firebase": "^12.14.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
