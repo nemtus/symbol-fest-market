@@ -33,7 +33,7 @@ const OrderForUser = () => {
         setOrderDocLoading(false);
       },
       (error) => {
-        setOrderDocError(error as Error);
+        setOrderDocError(error);
         setOrderDocLoading(false);
       },
     );

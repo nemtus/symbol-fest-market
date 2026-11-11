@@ -42,6 +42,16 @@ updates:
       # run ahead of the runtime. Minor/patch still update.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      # 0.3.0+ ships d.ts that reference `globalAxios.AxiosResponse` as a
+      # namespace, which does not resolve under the frontend's
+      # `moduleResolution: bundler` (axios' ESM types have no namespace), so
+      # every API response silently becomes an error type. Runtime is identical
+      # and both versions depend on axios ^1.17.0 (security fixes come via the
+      # axios lockfile entry). Revisit once the generator emits
+      # `import type { AxiosResponse }`. The functions package (CommonJS) is
+      # unaffected and stays on the latest release.
+      - dependency-name: "@nemtus/symbol-sdk-openapi-generator-typescript-axios"
+        versions: [">=0.3.0"]
 
   # ----------------------------------------------------------------------------
   # Cloud Functions
@@ -60,12 +70,6 @@ updates:
           - minor
           - patch
     ignore:
-      # firebase-admin 14 is rejected by firebase-functions 7's peer range
-      # (firebase-admin "^11.10.0 || ^12.0.0 || ^13.0.0"). Revisit once
-      # firebase-functions accepts firebase-admin 14, which will also clear the
-      # @google-cloud/* advisories.
-      - dependency-name: "firebase-admin"
-        update-types: ["version-update:semver-major"]
       # @types/node tracks the Node 22 functions runtime; hold the major.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
